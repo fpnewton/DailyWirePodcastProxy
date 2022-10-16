@@ -1,0 +1,47 @@
+# Maintainer: Fraser Newton <fpnewton90@gmail.com>
+pkgname=dailywire-podcast-proxy
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='The DailyWire podcast RSS proxy.'
+arch=('x86_64')
+url='https://github.com/fpnewton/DailyWirePodcastProxy'
+license=("MIT")
+makedepends=('git' 'dotnet-sdk')
+source=('git+https://github.com/fpnewton/DailyWirePodcastProxy')
+sha256sums=('SKIP')
+
+build() {
+  cd ./DailyWirePodcastProxy/
+
+  MSBUILDDISABLENODEREUSE=1 dotnet restore \
+    ./DailyWirePodcastProxy.sln
+
+  MSBUILDDISABLENODEREUSE=1 dotnet build \
+    --no-restore \
+    ./DailyWirePodcastProxy.sln
+
+  echo "Building..."
+
+  MSBUILDDISABLENODEREUSE=1 dotnet publish \
+    --configuration Release \
+    --self-contained true \
+    --runtime linux-x64 \
+    --output ./publish/$pkgname \
+    ./src/DailyWirePodcastProxy/DailyWirePodcastProxy.csproj
+}
+
+package() {
+  cd ./DailyWirePodcastProxy/
+    
+    install -d $pkgdir/usr/{bin,lib}
+    install -d $pkgdir/usr/lib/systemd/system
+    
+    cp -r "./publish/$pkgname" "$pkgdir/usr/lib/"
+    ln -s "/usr/lib/$pkgname/$pkgname" "$pkgdir/usr/bin/$pkgname"
+
+    install -m 644 "./build/dailywire-podcast-proxy.service" "$pkgdir/usr/lib/systemd/system/dailywire-podcast-proxy.service"
+}
+
+post_install() {
+    systemctl daemon-reload
+}
