@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DailyWireApi", "src\DailyWireApi\DailyWireApi.csproj", "{E86A783D-B9A4-4132-851F-D53A9411850F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DailyWireAuthentication", "src\DailyWireAuthentication\DailyWireAuthentication.csproj", "{91ABA66F-F6FF-4286-B919-9E553462854E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DailyWirePodcastProxy", "src\DailyWirePodcastProxy\DailyWirePodcastProxy.csproj", "{94F60918-EA2B-4FB2-8FF2-080CE70E801A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PodcastDatabase", "src\PodcastDatabase\PodcastDatabase.csproj", "{776C2FDF-0168-4863-A187-2E50B8A89D8B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PodcastProxy", "src\PodcastProxy\PodcastProxy.csproj", "{7815D4D0-8022-4006-99C7-78D522125181}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E86A783D-B9A4-4132-851F-D53A9411850F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E86A783D-B9A4-4132-851F-D53A9411850F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E86A783D-B9A4-4132-851F-D53A9411850F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E86A783D-B9A4-4132-851F-D53A9411850F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91ABA66F-F6FF-4286-B919-9E553462854E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91ABA66F-F6FF-4286-B919-9E553462854E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91ABA66F-F6FF-4286-B919-9E553462854E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91ABA66F-F6FF-4286-B919-9E553462854E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94F60918-EA2B-4FB2-8FF2-080CE70E801A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94F60918-EA2B-4FB2-8FF2-080CE70E801A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94F60918-EA2B-4FB2-8FF2-080CE70E801A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94F60918-EA2B-4FB2-8FF2-080CE70E801A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{776C2FDF-0168-4863-A187-2E50B8A89D8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{776C2FDF-0168-4863-A187-2E50B8A89D8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{776C2FDF-0168-4863-A187-2E50B8A89D8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{776C2FDF-0168-4863-A187-2E50B8A89D8B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7815D4D0-8022-4006-99C7-78D522125181}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7815D4D0-8022-4006-99C7-78D522125181}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7815D4D0-8022-4006-99C7-78D522125181}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7815D4D0-8022-4006-99C7-78D522125181}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,11 @@
+[Unit]
+Description=DailyWire Scraper
+
+[Service]
+Type=notify
+WorkingDirectory=/usr/lib/dailywire-scraper
+Environment="ASPNETCORE_URLS=http://*:5000"
+ExecStart=/usr/lib/dailywire-scraper/PodcastApi
+
+[Install]
+WantedBy=multi-user.target
