@@ -1,11 +1,11 @@
 [Unit]
-Description=DailyWire Scraper
+Description=DailyWire Podcast Proxy
 
 [Service]
 Type=notify
-WorkingDirectory=/usr/lib/dailywire-scraper
-Environment="ASPNETCORE_URLS=http://*:5000"
-ExecStart=/usr/lib/dailywire-scraper/PodcastApi
+WorkingDirectory=/usr/lib/dailywire-podcast-proxy
+Environment="ASPNETCORE_URLS=http://*:9473"
+ExecStart=/usr/lib/dailywire-podcast-proxy/DailyWirePodcastProxy
 
 [Install]
 WantedBy=multi-user.target
