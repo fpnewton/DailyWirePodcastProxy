@@ -6,6 +6,7 @@ using DailyWireApi.Queries.ListPodcastEpisode;
 using DailyWirePodcastProxy.Attributes;
 using DailyWirePodcastProxy.Models;
 using DailyWirePodcastProxy.Requests.Podcasts;
+using Flurl;
 using Microsoft.AspNetCore.Mvc;
 using PodcastProxy.Queries.GetPodcastFeed;
 
@@ -48,8 +49,18 @@ public class PodcastsController : BaseController
 
     [HttpGet("{PodcastId}/feed")]
     [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetPodcastFeed([FromRoute] GetPodcastFeedQuery query, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetPodcastFeed([FromRoute(Name = "PodcastId")] string podcastId, CancellationToken cancellationToken)
     {
+        var feedUrl = $"{Request.Scheme}://{Request.Host}"
+            .AppendPathSegment(Request.PathBase)
+            .AppendPathSegment(Request.Path);
+
+        var query = new GetPodcastFeedQuery
+        {
+            PodcastId = podcastId,
+            FeedUrl = Request.Query.Aggregate(feedUrl, (url, pair) => url.SetQueryParam(pair.Key, pair.Value))
+        };
+        
         var document = await Mediator.Send(query, cancellationToken);
         var stream = new MemoryStream();
         var settings = new XmlWriterSettings { Async = true };

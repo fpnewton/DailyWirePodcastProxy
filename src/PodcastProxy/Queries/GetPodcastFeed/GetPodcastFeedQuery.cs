@@ -6,4 +6,5 @@ namespace PodcastProxy.Queries.GetPodcastFeed;
 public class GetPodcastFeedQuery : IRequest<XDocument>
 {
     public string PodcastId { get; set; } = null!;
+    public string FeedUrl { get; set; } = null!;
 }

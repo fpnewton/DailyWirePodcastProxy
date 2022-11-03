@@ -41,10 +41,11 @@ public class GetPodcastFeedQueryHandler : IRequestHandler<GetPodcastFeedQuery, X
 
         var channel = new XElement("channel",
             new XElement(atom + "link",
-                new XAttribute("href", $"https://www.dailywire.com/show/{podcast.Slug}"),
+                new XAttribute("href", request.FeedUrl),
                 new XAttribute("rel", "self"),
                 new XAttribute("type", "application/rss+xml")
             ),
+            new XElement("link", $"https://www.dailywire.com/show/{podcast.Slug}"),
             new XElement("title", podcast.Name),
             new XElement("description", podcast.Description),
             new XElement(itunes + "subtitle", podcast.Description),
@@ -100,9 +101,11 @@ public class GetPodcastFeedQueryHandler : IRequestHandler<GetPodcastFeedQuery, X
                     item.Add(new XElement("description", episode.Description));
                 }
 
-                if (episode.ScheduleAt.HasValue)
+                var episodeDate = episode.PublishDate ?? episode.ScheduleAt ?? episode.UpdatedAt ?? episode.CreatedAt;
+
+                if (episodeDate.HasValue)
                 {
-                    var timestamp = episode.ScheduleAt.Value.ToString("ddd, dd MMM yyyy HH:mm:ss zz") + episode.ScheduleAt.Value.Offset.ToString("mm");
+                    var timestamp = episodeDate.Value.ToString("ddd, dd MMM yyyy HH:mm:ss zz") + episodeDate.Value.Offset.ToString("mm");
 
                     item.Add(new XElement("pubDate", timestamp));
                 }
