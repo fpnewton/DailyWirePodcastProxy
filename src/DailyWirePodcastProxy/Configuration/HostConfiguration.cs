@@ -20,6 +20,8 @@ public static class HostConfiguration
             {
                 IniFilepath = iniFilePath
             });
+
+            builder.Services.AddOptions<AuthOptions>().Bind(builder.Configuration.GetSection(AuthOptions.ConfigSectionName));
         });
         
         builder.Host.UseSystemd();
