@@ -1,3 +1,3 @@
-FROM Alpine:latest
+FROM alpine:latest
 
 RUN apk update -y
