@@ -14,11 +14,20 @@ A podcast feed endpoint formats the podcast episodes stored in the localdatabase
 This feed provides your podcast client direct URLs to the same full-length and ad-free episodes that the mobile app plays.
 
 ## Installation
+### Option 1: Local Install
 1. Install the package or extract the release contents into a folder
 2. Edit `DailyWirePodcastProxy.ini` and add your DailyWire username/password
 3. Start DailyWirePodcastProxy service
 
 A systemd unit file `dailywire-podcast-proxy.service` is provided for convenience.
+
+### Option 2: Docker
+DailyWirePodcastProxy can be run via Docker with the container `ghcr.io/fpnewton/dailywirepodcastproxy:master`. Editing `DailyWirePodcastProxy.ini` with your credentials is still required, and the AccessKey will be written-back to the mapped file (assuming write is permitted).
+
+> **Note**
+> The `[Host]` section of `DailyWirePodcastProxy.ini` should be changed to `http://0.0.0.0:9473` to allow access from outside the container (in addition to the port mapping in Docker)
+
+A `docker-compose.yml` file is provided as an example to build off of. 
 
 ## Configuration
 DailyWirePodcastProxy is configured by editing `DailyWirePodcastProxy.ini`
