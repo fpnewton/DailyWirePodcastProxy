@@ -1,7 +1,7 @@
 FROM alpine:latest
 
 # Install support tools
-RUN apk add --update --no-cache dotnet7-runtime libc6-compat chromium
+RUN apk add --update --no-cache dotnet7-runtime apk add gcompat chromium
 
 # Copy source files
 COPY publish/linux-x64 /opt/publish/linux-x64
