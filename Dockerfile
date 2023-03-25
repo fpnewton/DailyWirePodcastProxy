@@ -12,6 +12,9 @@ RUN adduser -D dwpp
 # Set permissions
 RUN chown -R dwpp:root /opt/publish/linux-x64
 
+# Fix libc6 linking
+RUN ln -s /lib/libc.musl-x86_64.so.1 /lib/ld-linux-x86-64.so.2
+
 # Change user
 USER dwpp
 
