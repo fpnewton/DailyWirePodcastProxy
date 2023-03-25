@@ -29,4 +29,4 @@ WORKDIR /opt/publish/linux-x64
 EXPOSE 9473
 
 # Run DailyWirePodcastProxy
-ENTRYPOINT ./opt/publish/linux-64/DailyWirePodcastProxy
+ENTRYPOINT /opt/publish/linux-64/DailyWirePodcastProxy
