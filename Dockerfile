@@ -1,7 +1,7 @@
 FROM alpine:latest
 
 # Install support tools
-RUN apk add --update --no-cache dotnet7-runtime chromium
+RUN apk add --update --no-cache aspnetcore6-runtime chromium
 
 # Copy source files
 COPY publish/linux-x64 /opt/publish/linux-x64
