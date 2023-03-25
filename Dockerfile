@@ -1,7 +1,7 @@
 FROM ubuntu:latest
 
 # Install support tools
-RUN apt update && apt install wget -y
+RUN apt update && apt install wget gnupg2 -y
 
 # Install Chrome for IGraphqlClient
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
