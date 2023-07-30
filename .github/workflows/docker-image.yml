@@ -11,7 +11,7 @@ name: Create and publish a Docker image
 
 on:
   push:
-    branches: ['master']
+    branches: ['master', 'feature/**']
 
 env:
   REGISTRY: ghcr.io
@@ -27,6 +27,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+
+      - name: Build
+        run: sh build/build-arch.sh linux-x64
 
       - name: Log in to the Container registry
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
