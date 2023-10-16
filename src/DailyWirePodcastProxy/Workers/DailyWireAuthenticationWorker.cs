@@ -1,28 +1,26 @@
 using DailyWireAuthentication.Services;
-using SimpleInjector;
-using SimpleInjector.Lifestyles;
 
 namespace DailyWirePodcastProxy.Workers;
 
 public class DailyWireAuthenticationWorker : BackgroundService
 {
-    private readonly ILogger<DailyWireAuthenticationWorker> _logger;
-    private readonly Container _container;
+    private readonly IServiceProvider _serviceProvider;
 
-    public DailyWireAuthenticationWorker(ILogger<DailyWireAuthenticationWorker> logger, Container container)
+    public DailyWireAuthenticationWorker(IServiceProvider serviceProvider)
     {
-        _logger = logger;
-        _container = container;
+        _serviceProvider = serviceProvider;
     }
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        await using var scope = ThreadScopedLifestyle.BeginScope(_container);
-        var tokenService = scope.GetRequiredService<ITokenService>();
+        await using var scope = _serviceProvider.CreateAsyncScope();
+        
+        var tokenService = scope.ServiceProvider.GetRequiredService<ITokenService>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<DailyWireAuthenticationWorker>>();
         var hasValidToken = await tokenService.HasValidAccessToken(cancellationToken);
-
-        _logger.LogInformation("Token status: {Valid}", hasValidToken ? "Valid" : "Invalid");
-
+        
+        logger.LogInformation("Token status: {Valid}", hasValidToken ? "Valid" : "Invalid");
+        
         if (!hasValidToken)
         {
             await tokenService.GetAccessToken(cancellationToken);

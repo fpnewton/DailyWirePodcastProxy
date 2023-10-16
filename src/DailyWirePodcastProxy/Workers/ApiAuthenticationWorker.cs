@@ -3,45 +3,43 @@ using System.Web;
 using DailyWirePodcastProxy.Extensions;
 using DailyWirePodcastProxy.Models;
 using IniParser;
-using SimpleInjector;
-using SimpleInjector.Lifestyles;
 
 namespace DailyWirePodcastProxy.Workers;
 
 public class ApiAuthenticationWorker : BackgroundService
 {
-    private readonly ILogger<ApiAuthenticationWorker> _logger;
-    private readonly Container _container;
+    private readonly IServiceProvider _serviceProvider;
 
-    public ApiAuthenticationWorker(ILogger<ApiAuthenticationWorker> logger, Container container)
+    public ApiAuthenticationWorker(IServiceProvider serviceProvider)
     {
-        _logger = logger;
-        _container = container;
+        _serviceProvider = serviceProvider;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await using var scope = ThreadScopedLifestyle.BeginScope(_container);
-        var configurationSettings = scope.GetInstance<ConfigurationSettings>();
-
+        await using var scope = _serviceProvider.CreateAsyncScope();
+        
+        var configurationSettings = scope.ServiceProvider.GetRequiredService<ConfigurationSettings>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<ApiAuthenticationWorker>>();
+        
         if (string.IsNullOrEmpty(configurationSettings.IniFilepath) || !File.Exists(configurationSettings.IniFilepath))
         {
             throw new Exception($"{nameof(ConfigurationSettings.IniFilepath)} is not valid");
         }
-
+        
         var parser = new FileIniDataParser();
         var config = parser.ReadFile(configurationSettings.IniFilepath);
-
+        
         if (string.IsNullOrEmpty(config["Authentication"]["AccessKey"]))
         {
             var keyBytes = RandomNumberGenerator.GetBytes(16);
             var accessKey = keyBytes.ToBase58String();
-
+        
             config["Authentication"]["AccessKey"] = HttpUtility.UrlEncode(accessKey);
-
+        
             parser.WriteFile(configurationSettings.IniFilepath, config);
             
-            _logger.LogInformation("API Access Key: {AccessKey}", accessKey);
+            logger.LogInformation("API Access Key: {AccessKey}", accessKey);
         }
     }
 }

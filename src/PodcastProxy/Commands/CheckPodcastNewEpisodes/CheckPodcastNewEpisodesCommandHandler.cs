@@ -13,7 +13,7 @@ public class CheckPodcastNewEpisodesCommandHandler : IRequestHandler<CheckPodcas
         _mediator = mediator;
     }
 
-    public async Task<Unit> Handle(CheckPodcastNewEpisodesCommand request, CancellationToken cancellationToken)
+    public async Task Handle(CheckPodcastNewEpisodesCommand request, CancellationToken cancellationToken)
     {
         var query = new GetLatestSeasonForPodcastQuery { PodcastId = request.PodcastId };
         var season = await _mediator.Send(query, cancellationToken);
@@ -24,7 +24,5 @@ public class CheckPodcastNewEpisodesCommandHandler : IRequestHandler<CheckPodcas
 
             await _mediator.Send(command, cancellationToken);
         }
-
-        return Unit.Value;
     }
 }

@@ -1,23 +1,21 @@
 using Microsoft.EntityFrameworkCore;
 using PodcastDatabase.Contexts;
-using SimpleInjector;
-using SimpleInjector.Lifestyles;
 
 namespace DailyWirePodcastProxy.Workers;
 
 public class DatabaseMigrationWorker : BackgroundService
 {
-    private readonly Container _container;
+    private readonly IServiceProvider _serviceProvider;
 
-    public DatabaseMigrationWorker(Container container)
+    public DatabaseMigrationWorker(IServiceProvider serviceProvider)
     {
-        _container = container;
+        _serviceProvider = serviceProvider;
     }
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        await using var scope = ThreadScopedLifestyle.BeginScope(_container);
-        await using var db = scope.GetRequiredService<PodcastDbContext>();
+        await using var scope = _serviceProvider.CreateAsyncScope();
+        await using var db = scope.ServiceProvider.GetRequiredService<PodcastDbContext>();
         
         await db.Database.MigrateAsync(cancellationToken);
     }

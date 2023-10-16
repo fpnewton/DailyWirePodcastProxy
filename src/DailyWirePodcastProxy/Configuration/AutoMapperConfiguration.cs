@@ -1,25 +1,24 @@
 using System.Reflection;
 using AutoMapper;
-using SimpleInjector;
 
 namespace DailyWirePodcastProxy.Configuration;
 
 public static class AutoMapperConfiguration
 {
-    public static WebApplicationBuilder ConfigureAutoMapper(this WebApplicationBuilder builder, IList<Assembly> assemblies)
+    public static WebApplicationBuilder ConfigureAutoMapper(this WebApplicationBuilder builder)
     {
-        builder.Services.AddSingleton(provider => ProvideMapperConfiguration(provider, assemblies));
+        builder.Services.AddSingleton(provider => ProvideMapperConfiguration(provider, AppDomain.CurrentDomain.GetAssemblies()));
         builder.Services.AddSingleton(ProviderMapper);
 
         return builder;
     }
 
-    private static MapperConfigurationExpression BuildMapperConfigurationExpression(Container container, IList<Assembly> assemblies)
+    private static MapperConfigurationExpression BuildMapperConfigurationExpression(IServiceProvider services, IList<Assembly> assemblies)
     {
         var expression = new MapperConfigurationExpression();
         var mappingProfileTypes = GetMappingProfileTypes(assemblies);
 
-        expression.ConstructServicesUsing(container.GetInstance);
+        expression.ConstructServicesUsing(services.GetService);
         expression.AddProfiles(mappingProfileTypes);
 
         return expression;
@@ -42,11 +41,12 @@ public static class AutoMapperConfiguration
         return mapperConfiguration;
     }
 
-    private static MapperConfiguration ProvideMapperConfiguration(IServiceProvider provider, IList<Assembly> assemblies) =>
-        BuildMapperConfiguration(BuildMapperConfigurationExpression(provider.GetRequiredService<Container>(), assemblies));
+    private static MapperConfiguration
+        ProvideMapperConfiguration(IServiceProvider provider, IList<Assembly> assemblies) =>
+        BuildMapperConfiguration(BuildMapperConfigurationExpression(provider, assemblies));
 
     private static IMapper ProviderMapper(IServiceProvider provider) =>
-        new Mapper(provider.GetRequiredService<MapperConfiguration>(), provider.GetRequiredService<Container>().GetInstance);
+        new Mapper(provider.GetRequiredService<MapperConfiguration>(), provider.GetService);
 
     private static IEnumerable<Type> GetMappingProfileTypes(IEnumerable<Assembly> assemblies)
     {
