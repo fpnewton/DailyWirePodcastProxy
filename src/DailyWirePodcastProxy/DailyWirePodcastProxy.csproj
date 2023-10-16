@@ -21,7 +21,7 @@
         <PackageReference Include="SimpleInjector.Integration.AspNetCore" Version="5.4.0" />
         <PackageReference Include="SimpleInjector.Integration.AspNetCore.Mvc.Core" Version="5.4.0" />
         <PackageReference Include="SimpleInjector.Packaging" Version="5.0.0" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     </ItemGroup>
 
     <ItemGroup>
