@@ -31,8 +31,11 @@ public class LoginPage(
                 {
                     return null;
                 }
+                
+                var publicHost = configuration["Host:PublicHost"]?.Trim();
+                var host = !string.IsNullOrEmpty(publicHost) ? publicHost : $"{Request.Scheme}://{Request.Host}";
     
-                var uri = $"{Request.Scheme}://{Request.Host}"
+                var uri = host
                     .AppendPathSegment(configuration["Host:BasePath"])
                     .AppendPathSegment("qr-code")
                     .AppendQueryParam("uri", Tokens.VerificationUriComplete);
@@ -50,7 +53,10 @@ public class LoginPage(
         {
             get
             {
-                var uri = $"{Request.Scheme}://{Request.Host}"
+                var publicHost = configuration["Host:PublicHost"]?.Trim();
+                var host = !string.IsNullOrEmpty(publicHost) ? publicHost : $"{Request.Scheme}://{Request.Host}";
+                
+                var uri = host
                     .AppendPathSegment(configuration["Host:BasePath"])
                     .AppendPathSegment("authorize");
     

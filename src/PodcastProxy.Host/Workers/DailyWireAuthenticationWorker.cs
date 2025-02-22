@@ -32,7 +32,7 @@ public class DailyWireAuthenticationWorker(IServiceProvider serviceProvider) : B
         var hasValidToken = await tokenService.HasValidAccessToken(cancellationToken);
 
         logger.LogInformation("Token status: {Valid}", hasValidToken ? "Valid" : "Invalid");
-        
+
         if (!hasValidToken)
         {
             var refreshSuccessful = await tokenService.RefreshToken(cancellationToken);
@@ -41,13 +41,14 @@ public class DailyWireAuthenticationWorker(IServiceProvider serviceProvider) : B
             {
                 return;
             }
-                
+
             var server = serviceProvider.GetRequiredService<IServer>();
             var addressFeature = server.Features.Get<IServerAddressesFeature>();
-            var address = addressFeature?.Addresses.FirstOrDefault();
+            var publicHost = configuration["Host:PublicHost"]?.Trim();
+            var host = !string.IsNullOrEmpty(publicHost) ? publicHost : addressFeature?.Addresses.FirstOrDefault();
             var basePath = configuration["Host:BasePath"];
 
-            var url = address.AppendPathSegments(basePath, "login");
+            var url = host.AppendPathSegments(basePath, "login");
 
             if (authDetailsProvider.AccessKeyRequirementEnabled())
             {
