@@ -7,7 +7,6 @@ using Flurl;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using PodcastProxy.Api.Extensions;
-using QRCoder;
 
 namespace PodcastProxy.Api.Endpoints.DailyWire;
 
@@ -43,8 +42,8 @@ public class GetPodcastsEndpoint(
         var host = HttpContext.Request.Host;
 
         var baseUrl = new Url($"{scheme}://{host}")
-            .AppendPathSegment(HttpContext.Request.PathBase)
-            .AppendPathSegment(HttpContext.Request.Path)
+            .AppendPathSegment(configuration["Host:BasePath"])
+            .AppendPathSegment("podcasts")
             .SetQueryParam("auth", configuration["Authentication:AccessKey"]);
 
         foreach (var module in modularPage.Modules)
@@ -60,7 +59,7 @@ public class GetPodcastsEndpoint(
                     Slug = podcast.Slug,
                     Name = podcast.Name,
                     Description = podcast.Description,
-                    Feed = baseUrl.AppendPathSegments(podcast.Id, "feed").ToUri()
+                    Feed = baseUrl.Clone().AppendPathSegments(podcast.Id, "feed").ToUri()
                 };
             }
         }
