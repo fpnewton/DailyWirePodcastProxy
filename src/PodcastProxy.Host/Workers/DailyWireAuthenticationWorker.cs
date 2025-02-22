@@ -1,6 +1,8 @@
 using DailyWire.Authentication.Services;
+using Flurl;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -23,6 +25,7 @@ public class DailyWireAuthenticationWorker(IServiceProvider serviceProvider) : B
     {
         await using var scope = serviceProvider.CreateAsyncScope();
 
+        var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
         var tokenService = scope.ServiceProvider.GetRequiredService<ITokenService>();
         var authDetailsProvider = scope.ServiceProvider.GetRequiredService<IAuthenticationDetailsProvider>();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<DailyWireAuthenticationWorker>>();
@@ -42,16 +45,20 @@ public class DailyWireAuthenticationWorker(IServiceProvider serviceProvider) : B
             var server = serviceProvider.GetRequiredService<IServer>();
             var addressFeature = server.Features.Get<IServerAddressesFeature>();
             var address = addressFeature?.Addresses.FirstOrDefault();
-            var apiKeyQueryParam = !string.IsNullOrEmpty(authDetailsProvider.GetApiAccessKey()) && authDetailsProvider.AccessKeyRequirementEnabled() ? $"?auth={authDetailsProvider.GetApiAccessKey()}" : "";
-            var authorizePath = "/login" + apiKeyQueryParam;
-            var authorizeUrl = !string.IsNullOrEmpty(address) ? address + authorizePath : authorizePath;
-            var uri = new Uri(authorizeUrl, UriKind.RelativeOrAbsolute);
+            var basePath = configuration["Host:BasePath"];
+
+            var url = address.AppendPathSegments(basePath, "login");
+
+            if (authDetailsProvider.AccessKeyRequirementEnabled())
+            {
+                url = url.AppendQueryParam("auth", authDetailsProvider.GetApiAccessKey());
+            }
 
             Console.WriteLine();
             Console.WriteLine("===========================================");
             Console.WriteLine("Authorization Required!");
             Console.WriteLine();
-            Console.WriteLine($"Please visit: {uri}");
+            Console.WriteLine($"Please visit: {url}");
             Console.WriteLine("===========================================");
             Console.WriteLine();
         }

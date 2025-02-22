@@ -1,5 +1,6 @@
 using Auth0.AuthenticationApi.Models;
 using DailyWire.Authentication.Handlers;
+using DailyWire.Authentication.Models;
 using DailyWire.Authentication.Services;
 using Flurl;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,8 @@ namespace PodcastProxy.Web.Pages;
 public class LoginPage(
     IAuthenticationDetailsProvider authenticationDetailsProvider,
     ITokenService tokenService,
-    DeviceCodeLoginHandler handler
+    DeviceCodeLoginHandler handler,
+    IConfiguration configuration
 ) : PageModel
 {
         public bool Valid { get; set; }
@@ -31,6 +33,7 @@ public class LoginPage(
                 }
     
                 var uri = $"{Request.Scheme}://{Request.Host}"
+                    .AppendPathSegment(configuration["Host:BasePath"])
                     .AppendPathSegment("qr-code")
                     .AppendQueryParam("uri", Tokens.VerificationUriComplete);
     
@@ -48,6 +51,7 @@ public class LoginPage(
             get
             {
                 var uri = $"{Request.Scheme}://{Request.Host}"
+                    .AppendPathSegment(configuration["Host:BasePath"])
                     .AppendPathSegment("authorize");
     
                 if (authenticationDetailsProvider.AccessKeyRequirementEnabled())
