@@ -1,5 +1,5 @@
-using DailyWireAuthentication.Models;
-using DailyWirePodcastProxy.Mappings;
+using DailyWire.Authentication.Models;
+using DailyWirePodcastProxy.Services;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace DailyWirePodcastProxy.Setup;
@@ -12,7 +12,8 @@ public static class DailyWirePodcastProxySetup
         
         services.TryAddSingleton(ProvideAccountConfiguration);
         services.TryAddSingleton(ProvideOAuthConfiguration);
-        services.TryAddSingleton<PodcastFeedValueResolver>();
+        
+        services.TryAddSingleton<IAuthenticationDetailsProvider, AuthenticationDetailsProvider>();
         
         return services;
     }

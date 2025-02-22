@@ -1,28 +1,38 @@
-using DailyWireApi.Setup;
-using DailyWireAuthentication.Setup;
-using DailyWirePodcastProxy.Configuration;
+using DailyWire.Api;
+using DailyWire.Authentication.Setup;
 using DailyWirePodcastProxy.Setup;
-using PodcastDatabase.Setup;
+using FastEndpoints;
+using FastEndpoints.Swagger;
+using PodcastProxy.Api;
+using PodcastProxy.Application;
+using PodcastProxy.Database;
+using PodcastProxy.Host.Configuration;
 
 var builder = WebApplication.CreateBuilder(args)
     .ConfigureHost()
     .ConfigureApi()
     .ConfigureAutoMapper()
-    // .ConfigureSimpleInjector(packageAssemblies)
     .ConfigureMediatR()
     .AddPodcastDatabase()
     .ConfigureQuartzServices()
     .AddHostedServices();
 
 builder.Services
+    .AddFastEndpoints()
+    .SwaggerDocument()
     .ConfigureDailyWireApi()
     .ConfigureDailyWireAuthentication()
     .ConfigureDailyWirePodcastProxy()
-    .ConfigurePodcastDatabase();
+    .ConfigurePodcastProxyApi()
+    .ConfigurePodcastDatabase()
+    .ConfigurePodcastProxy();
 
 var app = builder.Build()
     .ConfigureHost()
     .ConfigureApi();
+
+app.UseFastEndpoints()
+    .UseSwaggerGen();
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 

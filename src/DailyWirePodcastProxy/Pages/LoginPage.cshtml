@@ -1,0 +1,70 @@
+@page "/login"
+@model DailyWirePodcastProxy.Pages.LoginPage
+
+@{
+    Layout = "Shared/_Layout";
+}
+
+@if (!Model.Valid && Model.Tokens is not null)
+{
+    <h2 class="text-center">Authorization Required</h2>
+
+    @if (string.Equals(Model.Error, "timeout", StringComparison.OrdinalIgnoreCase))
+    {
+        <div class="alert alert-warning col-6 offset-3 text-center" role="alert">
+            Timed out waiting for authorization. Please try again with a new code below.
+        </div>
+    }
+
+    <div class="text-center pt-4">
+        <span>Please go to </span>
+        <a href="@Model.Tokens.VerificationUriComplete" target="_blank">@Model.Tokens.VerificationUri</a>
+    </div>
+
+    <div class="text-center">
+        <span> and enter the following code:</span>
+        <span class="bg-secondary text-bg-secondary rounded p-1">@Model.Tokens.UserCode</span>
+    </div>
+
+    <div class="text-center pt-4">
+        <span>Or scan the QR code:</span>
+    </div>
+
+    <div class="text-center">
+        <img src="@Model.QrCodeUrl" width="180" height="180"/>
+    </div>
+
+    <script>
+        setTimeout(() => {
+            const url = new URL(location.href);
+
+            url.searchParams.set('error', 'timeout');
+            location.assign(url);
+        }, @Model.Tokens.ExpiresIn * 1000);
+
+        setInterval(() => {
+            fetch('@Model.AuthorizeCallbackUrl', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({code: '@Model.Tokens.DeviceCode'})
+            }).then(res => {
+                if (res.status === 200) {
+                    const url = new URL(location.href);
+
+                    url.searchParams.delete('error');
+                    location.assign(url);
+                }
+            }).catch(() => {
+                // Silently ignore while waiting for user interaction.
+            });
+        }, @Model.Tokens.Interval * 1000);
+    </script>
+}
+else
+{
+    <div class="text-center">DailyWire API access is authorized.</div>
+}
+

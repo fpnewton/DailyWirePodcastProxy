@@ -32,10 +32,6 @@ A `docker-compose.yml` file is provided as an example to build off of.
 ## Configuration
 DailyWirePodcastProxy is configured by editing `DailyWirePodcastProxy.ini`
 
-### `[Account]` Section
-* `Username` is your DailyWire account username
-* `Password` is your DailyWire account password
-
 ### `[Host]` Section
 * `Host` The full address for this service to listen on. Host must include scheme, host and port (Default: `http://127.0.0.1:9473`)
 * `BasePath` The base path for this service to listen on. This is useful for when the service is behind a reverse proxy and must include a leading `/` (Default: `/`)
@@ -74,6 +70,22 @@ The feed URL includes the access key and can be opened by your podcast client.
 Note: These feed URLs are specific to your account and should not be shared.
 Please make sure your podcast client is configured to handle this as a private feed.
 
+### Authorizing Access to the Daily Wire API
+After first starting up the podcast proxy (or if the last time it was used has been greater than 30 days) you will need to grant it access to the Daily Wire API for your account.
+There will also be a message logged in the console output with a link to the login page to start the authorization process:
+```
+===========================================
+Authorization Required!
+
+Please visit: http://127.0.0.1:9473/login?auth=LokYdDAw23dBTEo7t753q1
+===========================================
+```
+If you are behind a reverse proxy, replace `http://127.0.0.1:9473` with your domain name and/or configured path.
+
+On this login page, click on the link provided or scan the QR code with your phone and then follow the instructions to complete the authorization process.
+After clicking on the 'Authorize' button, the login page will automatically reload if authorization was successful, otherwise an error message will be shown.
+
+If your API token is still valid, this login page will only show that authorization is not currently needed.
 
 ### Example Usage With Pocket Casts
 Pocket Casts supports private RSS feeds and you can add custom feeds here: [https://pocketcasts.com/submit/](https://pocketcasts.com/submit/)
