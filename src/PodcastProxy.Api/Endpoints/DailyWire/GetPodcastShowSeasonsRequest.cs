@@ -9,12 +9,12 @@ using PodcastProxy.Api.Extensions;
 
 namespace PodcastProxy.Api.Endpoints.DailyWire;
 
-public class GetPodcastSeasons
+public class GetPodcastShowSeasonsRequest
 {
     public string PodcastSlug { get; set; } = string.Empty;
 }
 
-public class GetPodcastSeasonsEndpoint(IDwApiService dwApiService) : Endpoint<GetPodcastSeasons>
+public class GetPodcastShowSeasonsEndpoint(IDwApiService dwApiService) : Endpoint<GetPodcastShowSeasonsRequest>
 {
     public override void Configure()
     {
@@ -26,7 +26,7 @@ public class GetPodcastSeasonsEndpoint(IDwApiService dwApiService) : Endpoint<Ge
     }
 
     [ProducesResponseType(typeof(IList<DwSeasonDetails>), StatusCodes.Status200OK)]
-    public override async Task HandleAsync(GetPodcastSeasons req, CancellationToken ct)
+    public override async Task HandleAsync(GetPodcastShowSeasonsRequest req, CancellationToken ct)
     {
         var seasons = await dwApiService.GetPodcastSeasonsBySlug(req.PodcastSlug, ct);
 
@@ -37,8 +37,8 @@ public class GetPodcastSeasonsEndpoint(IDwApiService dwApiService) : Endpoint<Ge
         await this.SendResult(result, ct);
     }
 
-    private static IEnumerable<PodcastSeasonOverview> MapSeasonDetailsToPodcastSeasonOverview(IEnumerable<DwSeasonDetails> details) =>
-        details.Select(detail => new PodcastSeasonOverview
+    private static IEnumerable<PodcastShowSeasonOverview> MapSeasonDetailsToPodcastSeasonOverview(IEnumerable<DwSeasonDetails> details) =>
+        details.Select(detail => new PodcastShowSeasonOverview
         {
             Id = detail.Id,
             Slug = detail.Slug,
@@ -48,7 +48,7 @@ public class GetPodcastSeasonsEndpoint(IDwApiService dwApiService) : Endpoint<Ge
 }
 
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-public class PodcastSeasonOverview
+public class PodcastShowSeasonOverview
 {
     public string Id { get; set; } = string.Empty;
     public string Slug { get; set; } = string.Empty;

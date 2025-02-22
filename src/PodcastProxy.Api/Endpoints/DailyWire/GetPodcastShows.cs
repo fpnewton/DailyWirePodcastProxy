@@ -10,10 +10,10 @@ using PodcastProxy.Api.Extensions;
 
 namespace PodcastProxy.Api.Endpoints.DailyWire;
 
-public class GetPodcastsEndpoint(
+public class GetPodcastShowsEndpoint(
     IConfiguration configuration,
     IDwApiService dwApiService
-) : EndpointWithoutRequest<ICollection<PodcastOverview>>
+) : EndpointWithoutRequest<ICollection<PodcastShowOverview>>
 {
     public override void Configure()
     {
@@ -21,8 +21,8 @@ public class GetPodcastsEndpoint(
         AllowAnonymous();
 #endif
 
-        Get("daily-wire/podcasts");
-        Description(e => e.Produces<IList<PodcastOverview>>());
+        Get("daily-wire/shows");
+        Description(e => e.Produces<IList<PodcastShowOverview>>());
     }
 
     public override async Task HandleAsync(CancellationToken ct)
@@ -36,7 +36,7 @@ public class GetPodcastsEndpoint(
         await this.SendResult(result, ct);
     }
 
-    private IEnumerable<PodcastOverview> MapModularPageToPodcastOverview(DwModularPageRes modularPage)
+    private IEnumerable<PodcastShowOverview> MapModularPageToPodcastOverview(DwModularPageRes modularPage)
     {
         var scheme = HttpContext.Request.Scheme;
         var host = HttpContext.Request.Host;
@@ -53,7 +53,7 @@ public class GetPodcastsEndpoint(
 
             foreach (var podcast in carousel.Podcasts)
             {
-                yield return new PodcastOverview
+                yield return new PodcastShowOverview
                 {
                     Id = podcast.Id,
                     Slug = podcast.Slug,
@@ -67,7 +67,7 @@ public class GetPodcastsEndpoint(
 }
 
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-public class PodcastOverview
+public class PodcastShowOverview
 {
     public string Id { get; set; } = string.Empty;
     public string? Slug { get; set; }
