@@ -9,6 +9,7 @@ public sealed class EpisodeBySeasonIdSpec : Specification<Episode>
     {
         Query
             .Where(episode => string.Equals(episode.SeasonId, seasonId))
+            .AsNoTracking()
             .OrderByDescending(e => e.EpisodeNumber);
     }
 }

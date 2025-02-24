@@ -20,23 +20,21 @@ public class GetLatestSeasonForPodcastQueryHandler(
     public async Task<Result<Season>> Handle(GetLatestSeasonForPodcastQuery request, CancellationToken cancellationToken)
     {
         var spec = new SeasonByPodcastIdSpec(request.PodcastId);
-        var season = await repository.FirstOrDefaultAsync(spec, cancellationToken);
-        var latest = await GetLatestSeasonApi(request.PodcastId, cancellationToken);
+        var existingSeasons = await repository.ListAsync(spec, cancellationToken);
+        var newSeasons = await GetLatestSeasonsApi(request.PodcastId, cancellationToken);
 
-        if (latest is not null)
+        foreach (var newSeason in newSeasons)
         {
-            if (season is null || !string.Equals(season.SeasonId, latest.SeasonId, StringComparison.Ordinal))
+            if (!existingSeasons.Any(s => string.Equals(s.SeasonId, newSeason.SeasonId, StringComparison.Ordinal)))
             {
-                await repository.AddAsync(latest, cancellationToken);
-
-                season = latest;
+                await repository.AddAsync(newSeason, cancellationToken);
             }
         }
 
-        return season is not null ? Result<Season>.Success(season) : Result<Season>.NotFound();
+        return Result.Success(newSeasons.First());
     }
 
-    private async Task<Season?> GetLatestSeasonApi(string podcastId, CancellationToken cancellationToken)
+    private async Task<IList<Season>> GetLatestSeasonsApi(string podcastId, CancellationToken cancellationToken)
     {
         var command = new FetchPodcastCommand
         {
@@ -46,6 +44,6 @@ public class GetLatestSeasonForPodcastQueryHandler(
         var result = await mediator.Send(command, cancellationToken);
         var podcast = result.Value;
 
-        return podcast.Seasons.MaxBy(s => s.Slug);
+        return podcast.Seasons.ToList();
     }
 }

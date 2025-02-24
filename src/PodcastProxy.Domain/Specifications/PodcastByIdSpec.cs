@@ -9,8 +9,10 @@ public sealed class PodcastByIdSpec : SingleResultSpecification<Podcast>
     {
         Query
             .Where(podcast => string.Equals(podcast.Id, podcastId))
+            .AsNoTracking()
             .Include(podcast => podcast.Seasons)
-            .ThenInclude(season => season.Episodes);
+            .ThenInclude(season => season.Episodes)
+            .AsNoTracking();
     }
 
     public PodcastByIdSpec(Podcast podcast) : this(podcast.Id)

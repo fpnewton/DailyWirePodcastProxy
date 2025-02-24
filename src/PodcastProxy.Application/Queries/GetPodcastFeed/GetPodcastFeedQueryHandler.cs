@@ -82,53 +82,60 @@ public class GetPodcastFeedQueryHandler(IMediator mediator, IRepository<Podcast>
             );
         }
 
-        foreach (var season in podcast?.Seasons ?? ArraySegment<Season>.Empty)
+        var seasons = podcast?.Seasons.OrderByDescending(s => s.Slug).ToList();
+
+        if (seasons is not null)
         {
-            foreach (var episode in season.Episodes)
+            foreach (var season in seasons)
             {
-                var item = new XElement("item",
-                    new XElement(itunes + "episodeType", "full"),
-                    new XElement(itunes + "episode", episode.EpisodeNumber),
-                    new XElement(itunes + "author", "The Daily Wire"),
-                    new XElement(itunes + "summary", episode.Description),
-                    new XElement(content + "encoded", new XCData($"<p>{episode.Description}</p>")),
-                    new XElement(itunes + "duration", episode.Duration.HasValue ? Math.Round(episode.Duration.Value) : null)
-                );
-
-                if (!string.IsNullOrEmpty(episode.Title))
+                var episodes = season.Episodes.OrderByDescending(s => s.PublishDate).ToList();
+                
+                foreach (var episode in episodes)
                 {
-                    item.Add(new XElement("title", episode.Title));
-                    item.Add(new XElement(itunes + "title", episode.Title));
+                    var item = new XElement("item",
+                        new XElement(itunes + "episodeType", "full"),
+                        new XElement(itunes + "episode", episode.EpisodeNumber),
+                        new XElement(itunes + "author", "The Daily Wire"),
+                        new XElement(itunes + "summary", episode.Description),
+                        new XElement(content + "encoded", new XCData($"<p>{episode.Description}</p>")),
+                        new XElement(itunes + "duration", episode.Duration.HasValue ? Math.Round(episode.Duration.Value) : null)
+                    );
+
+                    if (!string.IsNullOrEmpty(episode.Title))
+                    {
+                        item.Add(new XElement("title", episode.Title));
+                        item.Add(new XElement(itunes + "title", episode.Title));
+                    }
+
+                    if (!string.IsNullOrEmpty(episode.Description))
+                    {
+                        item.Add(new XElement("description", episode.Description));
+                    }
+
+                    var episodeDate = episode.PublishDate ?? episode.ScheduleAt ?? episode.UpdatedAt ?? episode.CreatedAt;
+
+                    if (episodeDate.HasValue)
+                    {
+                        var timestamp = episodeDate.Value.ToString("ddd, dd MMM yyyy HH:mm:ss zz") + episodeDate.Value.Offset.ToString("mm");
+
+                        item.Add(new XElement("pubDate", timestamp));
+                    }
+
+                    var enclosure = new XElement("enclosure", new XAttribute("type", episode.AudioMimeType ?? "application/octet-stream"));
+
+                    if (episode.Audio is not null)
+                    {
+                        enclosure.Add(new XAttribute("url", episode.Audio));
+                    }
+
+                    if (episode.Duration.HasValue)
+                    {
+                        enclosure.Add(new XAttribute("length", Math.Round(episode.Duration.Value)));
+                    }
+
+                    item.Add(enclosure);
+                    channel.Add(item);
                 }
-
-                if (!string.IsNullOrEmpty(episode.Description))
-                {
-                    item.Add(new XElement("description", episode.Description));
-                }
-
-                var episodeDate = episode.PublishDate ?? episode.ScheduleAt ?? episode.UpdatedAt ?? episode.CreatedAt;
-
-                if (episodeDate.HasValue)
-                {
-                    var timestamp = episodeDate.Value.ToString("ddd, dd MMM yyyy HH:mm:ss zz") + episodeDate.Value.Offset.ToString("mm");
-
-                    item.Add(new XElement("pubDate", timestamp));
-                }
-
-                var enclosure = new XElement("enclosure", new XAttribute("type", episode.AudioMimeType ?? "application/octet-stream"));
-
-                if (episode.Audio is not null)
-                {
-                    enclosure.Add(new XAttribute("url", episode.Audio));
-                }
-
-                if (episode.Duration.HasValue)
-                {
-                    enclosure.Add(new XAttribute("length", Math.Round(episode.Duration.Value)));
-                }
-
-                item.Add(enclosure);
-                channel.Add(item);
             }
         }
 

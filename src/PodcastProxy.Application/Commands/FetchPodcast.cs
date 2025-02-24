@@ -40,15 +40,23 @@ public class FetchPodcastCommandHandler(
         }
 
         var spec = new PodcastByIdSpec(result.Value);
-        var exists = await repository.AnyAsync(spec, cancellationToken);
+        var podcast = await repository.FirstOrDefaultAsync(spec, cancellationToken);
 
-        if (!exists)
+        if (podcast is null)
         {
             await repository.AddAsync(result.Value, cancellationToken);
         }
         else
         {
-            await repository.UpdateAsync(result.Value, cancellationToken);
+            podcast.Name = result.Value.Name;
+            podcast.Description = result.Value.Description;
+            podcast.Status = result.Value.Status;
+            podcast.CoverImage = result.Value.CoverImage;
+            podcast.BackgroundImage = result.Value.BackgroundImage;
+            podcast.LogoImage = result.Value.LogoImage;
+            podcast.BelongsTo = result.Value.BelongsTo;
+            
+            await repository.UpdateAsync(podcast, cancellationToken);
         }
 
         return result;

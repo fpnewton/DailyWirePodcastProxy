@@ -35,18 +35,32 @@ public class FetchLatestEpisodesCommandHandler(IMapper mapper, IMediator mediato
             }
 
             var spec = new EpisodeByIdSpec(model.Id);
-            var exists = await repository.AnyAsync(spec, cancellationToken);
+            var existing = await repository.FirstOrDefaultAsync(spec, cancellationToken);
             var episode = mapper.Map<Episode>(model);
 
             episode.SeasonId = request.SeasonId;
 
-            if (!exists)
+            if (existing is null)
             {
                 episode = await repository.AddAsync(episode, cancellationToken);
             }
             else
             {
-                await repository.UpdateAsync(episode, cancellationToken);
+                existing.Title = episode.Title;
+                existing.Description = episode.Description;
+                existing.Audio = episode.Audio;
+                existing.ListenTime = episode.ListenTime;
+                existing.AllowedContinents = episode.AllowedContinents;
+                existing.Thumbnail = episode.Thumbnail;
+                existing.Duration = episode.Duration;
+                existing.Rating = episode.Rating;
+                existing.AudioState = episode.AudioState;
+                existing.PublishDate = episode.PublishDate;
+                existing.CreatedAt = episode.CreatedAt;
+                existing.UpdatedAt = episode.UpdatedAt;
+                existing.ScheduleAt = episode.ScheduleAt;
+
+                await repository.SaveChangesAsync(cancellationToken);
             }
 
             episodes.Add(episode);

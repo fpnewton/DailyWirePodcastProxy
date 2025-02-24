@@ -7,6 +7,8 @@ public sealed class PodcastSpec : Specification<Podcast>
 {
     public PodcastSpec()
     {
-        Query.OrderBy(podcast => podcast.Name);
+        Query
+            .AsNoTracking()
+            .OrderBy(podcast => podcast.Name);
     }
 }

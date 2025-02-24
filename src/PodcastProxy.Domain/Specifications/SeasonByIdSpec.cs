@@ -7,6 +7,8 @@ public sealed class SeasonByIdSpec : Specification<Season>
 {
     public SeasonByIdSpec(string seasonId)
     {
-        Query.Where(season => string.Equals(season.SeasonId, seasonId));
+        Query
+            .Where(season => string.Equals(season.SeasonId, seasonId))
+            .AsNoTracking();
     }
 }
