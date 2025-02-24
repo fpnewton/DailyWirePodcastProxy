@@ -1,36 +1,40 @@
-using DailyWireApi;
-using DailyWireAuthentication;
-using DailyWirePodcastProxy;
-using DailyWirePodcastProxy.Configuration;
-using PodcastDatabase;
-using PodcastProxy;
-
-var packages = new List<Type>
-{
-    typeof(DailyWireApiPackage),
-    typeof(DailyWireAuthenticationPackage),
-    typeof(DailyWirePodcastProxyPackage),
-    typeof(PodcastsDatabasePackage),
-    typeof(PodcastProxyPackage)
-};
-
-var packageAssemblies = packages.Select(t => t.Assembly).DistinctBy(a => a.GetName()).ToList();
+using DailyWire.Api;
+using DailyWire.Authentication.Setup;
+using DailyWirePodcastProxy.Setup;
+using FastEndpoints;
+using FastEndpoints.Swagger;
+using PodcastProxy.Api;
+using PodcastProxy.Application;
+using PodcastProxy.Database;
+using PodcastProxy.Host.Configuration;
 
 var builder = WebApplication.CreateBuilder(args)
     .ConfigureHost()
     .ConfigureApi()
-    .ConfigureAutoMapper(packageAssemblies)
-    .ConfigureSimpleInjector(packageAssemblies)
-    .ConfigureMediatR(packageAssemblies)
-    .AddGraphQLClient()
+    .ConfigureAutoMapper()
+    .ConfigureMediatR()
     .AddPodcastDatabase()
     .ConfigureQuartzServices()
     .AddHostedServices();
 
+builder.Services
+    .AddFastEndpoints()
+    .SwaggerDocument()
+    .ConfigureDailyWireApi()
+    .ConfigureDailyWireAuthentication()
+    .ConfigureDailyWirePodcastProxy()
+    .ConfigurePodcastProxyApi()
+    .ConfigurePodcastDatabase()
+    .ConfigurePodcastProxy();
+
 var app = builder.Build()
     .ConfigureHost()
-    .ConfigureApi()
-    .EnableSimpleInjector();
+    .ConfigureApi();
+
+app.UseFastEndpoints()
+    .UseSwaggerGen();
+
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
 try
 {
@@ -38,9 +42,7 @@ try
 }
 catch (Exception e)
 {
-    var logger = app.Services.GetRequiredService<ILogger<Program>>();
-    
     logger.LogCritical(e, "Application crashed!");
-    
+
     throw;
 }
