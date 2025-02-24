@@ -40,8 +40,8 @@ public class AuthKeyAuthorizationHandler(
             else
             {
                 context.Fail();
-                logger.LogWarning("Authorization failed: Auth key parameter did not match\n\tRequest: {Request}",
-                    httpContextAccessor.HttpContext.Request.ToRequestLogLine());
+                logger.LogWarning("Authorization failed: Auth key parameter '{ProvidedAuthKey}' did not match '{ExpectedAuthKey}'\n\tRequest: {Request}",
+                    httpContextAccessor.HttpContext.Request.ToRequestLogLine(), authKey, authOptions.AccessKey);
             }
         }
         else
