@@ -92,6 +92,11 @@ public class TokenService(ILogger<TokenService> logger, ITokenStore tokenStore, 
 
     private static bool ValidateAccessToken(AuthenticationTokens tokens)
     {
+        if (string.IsNullOrWhiteSpace(tokens.AccessToken))
+        {
+            return false;
+        }
+        
         var parameters = ValidationParameters.None;
 
         parameters.ValidateIssuedTime = true;
