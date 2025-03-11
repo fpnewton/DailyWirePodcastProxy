@@ -35,6 +35,7 @@ DailyWirePodcastProxy is configured by editing `DailyWirePodcastProxy.ini`
 ### `[Host]` Section
 * `Host` The full address for this service to listen on. Host must include scheme, host and port (Default: `http://127.0.0.1:9473`)
 * `BasePath` The base path for this service to listen on. This is useful for when the service is behind a reverse proxy and must include a leading `/` (Default: `/`)
+* `PublicHost` The public-facing url, if using a reverse proxy. Make sure to include `https://` if your reverse proxy is setup with a certificate
 
 ### `[Authentication]` Section
 * `AccessKey` The access key required to interact with the service. See below for more details. 
@@ -86,6 +87,10 @@ On this login page, click on the link provided or scan the QR code with your pho
 After clicking on the 'Authorize' button, the login page will automatically reload if authorization was successful, otherwise an error message will be shown.
 
 If your API token is still valid, this login page will only show that authorization is not currently needed.
+
+### Reverse Proxy
+This service was designed to be running behind a reverse proxy to expose it to the public internet.
+If you do not have a reverse proxy, a Cloudflare private tunnel is a recommended alternative.
 
 ### Example Usage With Pocket Casts
 Pocket Casts supports private RSS feeds and you can add custom feeds here: [https://pocketcasts.com/submit/](https://pocketcasts.com/submit/)
