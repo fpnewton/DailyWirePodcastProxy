@@ -9,8 +9,13 @@ public static class HttpRequestExtensions
         var query = request.Query.Aggregate(string.Empty, (str, pair) =>
         {
             var separator = string.IsNullOrEmpty(str) ? '?' : '&';
-
-            return str + $"{separator}{pair.Key}={pair.Value}";
+            
+            var sanitizedValue = pair.Value.ToString()
+                .Replace(Environment.NewLine, "")
+                .Replace("\n", "")
+                .Replace("\r", "");
+            
+            return str + $"{separator}{pair.Key}={sanitizedValue}";
         });
 
         return $"{request.Method} {request.Scheme}://{request.Host}{request.Path}{query} {request.Protocol}";
