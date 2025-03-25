@@ -29,12 +29,11 @@ public class AuthKeyAuthorizationHandler(
             var authKey = httpContextAccessor.HttpContext.Request.Query["auth"].SingleOrDefault();
             var keyMatches = string.Equals(authKey?.Trim(), authOptions.AccessKey.Trim(), StringComparison.Ordinal);
 
-            logger.LogDebug("Authorization key matches: {KeyMatches}", keyMatches);
-            
             var sanitizedAuthKey = authKey?.Replace(Environment.NewLine, "")
                 .Replace("\n", "")
                 .Replace("\r", "");
             
+            logger.LogDebug("Authorization key matches: {KeyMatches}", keyMatches);
             logger.LogTrace("Expected auth key: {ExpectedAuthKey}\n\tProvided auth key: {ProvidedAuthKey}", authOptions.AccessKey, sanitizedAuthKey);
 
             if (keyMatches)
