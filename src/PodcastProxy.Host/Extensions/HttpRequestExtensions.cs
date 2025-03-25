@@ -13,7 +13,12 @@ public static class HttpRequestExtensions
             var sanitizedValue = pair.Value.ToString()
                 .Replace(Environment.NewLine, "")
                 .Replace("\n", "")
-                .Replace("\r", "");
+                .Replace("\r", "")
+                .Replace("<", "&lt;")
+                .Replace(">", "&gt;")
+                .Replace("&", "&amp;")
+                .Replace("\"", "&quot;")
+                .Replace("'", "&#39;");
             
             return str + $"{separator}{pair.Key}={sanitizedValue}";
         });
