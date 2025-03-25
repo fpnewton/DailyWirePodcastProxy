@@ -29,8 +29,12 @@ public class AuthKeyAuthorizationHandler(
             var authKey = httpContextAccessor.HttpContext.Request.Query["auth"].SingleOrDefault();
             var keyMatches = string.Equals(authKey?.Trim(), authOptions.AccessKey.Trim(), StringComparison.Ordinal);
 
+            var sanitizedAuthKey = authKey?.Replace(Environment.NewLine, "")
+                .Replace("\n", "")
+                .Replace("\r", "");
+            
             logger.LogDebug("Authorization key matches: {KeyMatches}", keyMatches);
-            logger.LogTrace("Expected auth key: {ExpectedAuthKey}\n\tProvided auth key: {ProvidedAuthKey}", authOptions.AccessKey, authKey);
+            logger.LogTrace("Expected auth key: {ExpectedAuthKey}\n\tProvided auth key: {ProvidedAuthKey}", authOptions.AccessKey, sanitizedAuthKey);
 
             if (keyMatches)
             {
@@ -41,7 +45,7 @@ public class AuthKeyAuthorizationHandler(
             {
                 context.Fail();
                 logger.LogWarning("Authorization failed: Auth key parameter '{ProvidedAuthKey}' did not match '{ExpectedAuthKey}'\n\tRequest: {Request}",
-                    httpContextAccessor.HttpContext.Request.ToRequestLogLine(), authKey, authOptions.AccessKey);
+                    httpContextAccessor.HttpContext.Request.ToRequestLogLine(), sanitizedAuthKey, authOptions.AccessKey);
             }
         }
         else
