@@ -9,7 +9,12 @@ public static class HttpRequestExtensions
         var query = request.Query.Aggregate(string.Empty, (str, pair) =>
         {
             var separator = string.IsNullOrEmpty(str) ? '?' : '&';
-            var sanitizedValue = pair.Value.ToString().Replace(Environment.NewLine, "").Replace("\n", "").Replace("\r", "");
+            
+            var sanitizedValue = pair.Value.ToString()
+                .Replace(Environment.NewLine, "")
+                .Replace("\n", "")
+                .Replace("\r", "");
+            
             return str + $"{separator}{pair.Key}={sanitizedValue}";
         });
 
