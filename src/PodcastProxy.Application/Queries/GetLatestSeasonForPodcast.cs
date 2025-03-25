@@ -1,5 +1,6 @@
 using Ardalis.Result;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using PodcastProxy.Application.Commands;
 using PodcastProxy.Database.Repositories;
 using PodcastProxy.Domain.Entities;
@@ -13,6 +14,7 @@ public class GetLatestSeasonForPodcastQuery : IRequest<Result<Season>>
 }
 
 public class GetLatestSeasonForPodcastQueryHandler(
+    ILogger<GetLatestSeasonForPodcastQueryHandler> logger,
     IRepository<Season> repository,
     IMediator mediator
 ) : IRequestHandler<GetLatestSeasonForPodcastQuery, Result<Season>>
@@ -22,6 +24,11 @@ public class GetLatestSeasonForPodcastQueryHandler(
         var spec = new SeasonByPodcastIdSpec(request.PodcastId);
         var existingSeasons = await repository.ListAsync(spec, cancellationToken);
         var newSeasons = await GetLatestSeasonsApi(request.PodcastId, cancellationToken);
+
+        if (!newSeasons.Any())
+        {
+            return Result.NoContent();
+        }
 
         foreach (var newSeason in newSeasons)
         {
@@ -42,6 +49,16 @@ public class GetLatestSeasonForPodcastQueryHandler(
         };
 
         var result = await mediator.Send(command, cancellationToken);
+
+        if (!result.IsSuccess)
+        {
+            var errors = string.Join(',', result.Errors);
+            
+            logger.LogWarning("GetLatestSeasons for podcast '{PodcastId} failed! Error: {ErrorMessage}", podcastId, errors);
+            
+            return ArraySegment<Season>.Empty;
+        }
+        
         var podcast = result.Value;
 
         return podcast.Seasons.ToList();

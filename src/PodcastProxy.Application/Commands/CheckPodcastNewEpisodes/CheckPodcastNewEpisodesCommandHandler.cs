@@ -1,3 +1,4 @@
+using Ardalis.Result;
 using MediatR;
 using PodcastProxy.Application.Commands.FetchLatestEpisodes;
 using PodcastProxy.Application.Queries;
@@ -11,7 +12,7 @@ public class CheckPodcastNewEpisodesCommandHandler(IMediator mediator) : IReques
         var query = new GetLatestSeasonForPodcastQuery { PodcastId = request.PodcastId };
         var season = await mediator.Send(query, cancellationToken);
 
-        if (season.IsSuccess)
+        if (season is { IsSuccess: true, Status: ResultStatus.Ok })
         {
             var command = new FetchLatestEpisodesCommand { SeasonId = season.Value.SeasonId, First = 3 };
 
