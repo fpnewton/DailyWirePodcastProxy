@@ -30,7 +30,11 @@ public class AuthKeyAuthorizationHandler(
             var keyMatches = string.Equals(authKey?.Trim(), authOptions.AccessKey.Trim(), StringComparison.Ordinal);
 
             logger.LogDebug("Authorization key matches: {KeyMatches}", keyMatches);
-            var sanitizedAuthKey = authKey?.Replace(Environment.NewLine, "").Replace("\n", "").Replace("\r", "");
+            
+            var sanitizedAuthKey = authKey?.Replace(Environment.NewLine, "")
+                .Replace("\n", "")
+                .Replace("\r", "");
+            
             logger.LogTrace("Expected auth key: {ExpectedAuthKey}\n\tProvided auth key: {ProvidedAuthKey}", authOptions.AccessKey, sanitizedAuthKey);
 
             if (keyMatches)
