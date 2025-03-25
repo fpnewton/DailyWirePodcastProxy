@@ -31,7 +31,12 @@ public class AuthKeyAuthorizationHandler(
 
             var sanitizedAuthKey = authKey?.Replace(Environment.NewLine, "")
                 .Replace("\n", "")
-                .Replace("\r", "");
+                .Replace("\r", "")
+                .Replace("<", "&lt;")
+                .Replace(">", "&gt;")
+                .Replace("&", "&amp;")
+                .Replace("\"", "&quot;")
+                .Replace("'", "&#39;");
             
             logger.LogDebug("Authorization key matches: {KeyMatches}", keyMatches);
             logger.LogTrace("Expected auth key: {ExpectedAuthKey}\n\tProvided auth key: {ProvidedAuthKey}", authOptions.AccessKey, sanitizedAuthKey);
