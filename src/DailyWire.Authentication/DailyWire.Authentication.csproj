@@ -11,7 +11,7 @@
       <PackageReference Include="Auth0.AuthenticationApi" Version="7.34.0" />
       <PackageReference Include="JWT" Version="11.0.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.2" />
-      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.2" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.3" />
     </ItemGroup>
 
 </Project>
