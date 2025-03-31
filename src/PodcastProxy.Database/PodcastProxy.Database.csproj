@@ -14,7 +14,7 @@
       <PackageReference Include="Ardalis.Specification.EntityFrameworkCore" Version="8.0.0" />
       <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.3.0" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.2" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.2" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.3" />
     </ItemGroup>
 
 </Project>
