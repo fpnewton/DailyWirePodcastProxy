@@ -13,7 +13,7 @@
     <ItemGroup>
       <PackageReference Include="AutoMapper" Version="14.0.0" />
       <PackageReference Include="Flurl" Version="4.0.0" />
-      <PackageReference Include="MediatR" Version="12.4.1" />
+      <PackageReference Include="MediatR" Version="12.5.0" />
       <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.14" />
       <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="9.0.4" />
       <PackageReference Include="Quartz" Version="3.14.0" />
