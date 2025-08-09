@@ -1,10 +1,10 @@
 using Auth0.AuthenticationApi.Models;
 using DailyWire.Authentication.Handlers;
 using DailyWire.Authentication.Services;
-using DailyWirePodcastProxy.Services;
 using Flurl;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using PodcastProxy.Domain.Services;
 
 namespace DailyWirePodcastProxy.Pages;
 

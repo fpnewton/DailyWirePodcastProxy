@@ -4,15 +4,9 @@ using DailyWirePodcastProxy.Extensions;
 using IniParser;
 using Microsoft.Extensions.Options;
 using PodcastProxy.Domain.Models;
+using PodcastProxy.Domain.Services;
 
 namespace DailyWirePodcastProxy.Services;
-
-public interface IAuthenticationDetailsProvider
-{
-    public bool AccessKeyRequirementEnabled();
-    public string? GetApiAccessKey();
-    public string? CreateApiAccessKey();
-}
 
 public class AuthenticationDetailsProvider(
     IServiceProvider serviceProvider,

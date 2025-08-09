@@ -1,6 +1,7 @@
 using DailyWire.Authentication.Models;
 using DailyWirePodcastProxy.Services;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using PodcastProxy.Domain.Services;
 
 namespace DailyWirePodcastProxy.Setup;
 

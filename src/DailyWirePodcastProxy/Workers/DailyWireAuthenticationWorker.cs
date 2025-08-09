@@ -1,7 +1,7 @@
 using DailyWire.Authentication.Services;
-using DailyWirePodcastProxy.Services;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using PodcastProxy.Domain.Services;
 
 namespace DailyWirePodcastProxy.Workers;
 

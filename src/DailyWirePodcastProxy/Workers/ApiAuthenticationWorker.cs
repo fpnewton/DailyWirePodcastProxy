@@ -1,4 +1,4 @@
-using DailyWirePodcastProxy.Services;
+using PodcastProxy.Domain.Services;
 
 namespace DailyWirePodcastProxy.Workers;
 
