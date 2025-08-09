@@ -6,6 +6,7 @@ using MediatR;
 
 namespace DailyWire.Api.Queries;
 
+[Obsolete]
 public class ListPodcastEpisodeQuery : IRequest<Result<IList<DwGetPodcastEpisodeRes>>>
 {
     public string? SeasonId { get; set; }
@@ -13,11 +14,13 @@ public class ListPodcastEpisodeQuery : IRequest<Result<IList<DwGetPodcastEpisode
     public int? Skip { get; set; }
 }
 
+[Obsolete]
 public class ListPodcastEpisodeQueryResponse
 {
     public IList<DwGetPodcastEpisodeRes>? ListPodcastEpisode { get; set; }
 }
 
+[Obsolete]
 public class ListPodcastEpisodeQueryHandler(
     IGraphQLClient client
 ) : BaseDailyWireApiQueryHandler<ListPodcastEpisodeQuery, ListPodcastEpisodeQueryResponse, IList<DwGetPodcastEpisodeRes>>(client)

@@ -1,5 +1,6 @@
 namespace DailyWire.Api.Models;
 
+[Obsolete]
 public interface IDwItem
 {
     public string Typename { get; }

@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 
 namespace DailyWire.Api.Converters;
 
+[Obsolete]
 public class ModuleListConverter : JsonConverter
 {
     private IList<IDwModule> Modules => GetType()
@@ -77,6 +78,7 @@ public class ModuleListConverter : JsonConverter
         return objectType.IsAssignableTo(typeof(IDwModule));
     }
 
+    [Obsolete]
     private class ModuleType : IDwModule
     {
         [JsonProperty("__typename")]

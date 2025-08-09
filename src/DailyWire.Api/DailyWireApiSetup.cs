@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DailyWire.Api;
 
+[Obsolete]
 public static class DailyWireApiSetup
 {
     public static IServiceCollection ConfigureDailyWireApi(this IServiceCollection services)
@@ -18,14 +19,14 @@ public static class DailyWireApiSetup
 
         services.AddScoped<IDwApiService, DwApiService>();
 
-        services.AddScoped<IGraphQLClient>(provder =>
+        services.AddScoped<IGraphQLClient>(provider =>
         {
-            var logger = provder.GetRequiredService<ILogger<IGraphQLClient>>();
-            var client = provder.GetRequiredService<HttpClient>();
-            var tokenService = provder.GetRequiredService<ITokenService>();
+            var logger = provider.GetRequiredService<ILogger<IGraphQLClient>>();
+            var client = provider.GetRequiredService<HttpClient>();
+            var tokenService = provider.GetRequiredService<ITokenService>();
             var serializer = new NewtonsoftJsonSerializer();
             var token = tokenService.GetAccessToken(CancellationToken.None).Result;
-            var endpoint = provder.GetRequiredService<IConfiguration>().GetConnectionString("GraphQL");
+            var endpoint = provider.GetRequiredService<IConfiguration>().GetConnectionString("GraphQL");
 
             if (string.IsNullOrEmpty(endpoint))
             {

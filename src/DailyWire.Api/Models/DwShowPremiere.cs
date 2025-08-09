@@ -1,5 +1,6 @@
 namespace DailyWire.Api.Models;
 
+[Obsolete]
 public class DwShowPremiere : IDwModule
 {
     public string Typename => "ShowPremiere";

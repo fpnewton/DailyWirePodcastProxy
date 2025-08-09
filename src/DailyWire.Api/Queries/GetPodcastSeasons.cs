@@ -6,17 +6,20 @@ using MediatR;
 
 namespace DailyWire.Api.Queries;
 
+[Obsolete]
 public class GetPodcastSeasonsQuery : IRequest<Result<IList<DwSeasonDetails>>>
 {
     public string? Id { get; set; }
     public string? Slug { get; set; }
 }
 
+[Obsolete]
 public class GetPodcastSeasonsResponse
 {
     public DwGetPodcastRes GetPodcast { get; set; } = default!;
 }
 
+[Obsolete]
 public class GetPodcastSeasonsQueryHandler(
     IGraphQLClient client
 ) : BaseDailyWireApiQueryHandler<GetPodcastSeasonsQuery, GetPodcastSeasonsResponse, IList<DwSeasonDetails>>(client)

@@ -6,17 +6,20 @@ using MediatR;
 
 namespace DailyWire.Api.Queries;
 
+[Obsolete]
 public class GetPodcastQuery : IRequest<Result<DwGetPodcastRes>>
 {
     public string? Id { get; set; }
     public string? Slug { get; set; }
 }
 
+[Obsolete]
 public class GetPodcastQueryResponse
 {
     public DwGetPodcastRes? GetPodcast { get; set; }
 }
 
+[Obsolete]
 public class GetPodcastQueryHandler(IGraphQLClient client) : BaseDailyWireApiQueryHandler<GetPodcastQuery, GetPodcastQueryResponse, DwGetPodcastRes>(client)
 {
   protected override GraphQLRequest BuildRequest(GetPodcastQuery request) => new()

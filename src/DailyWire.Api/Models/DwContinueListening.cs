@@ -1,5 +1,6 @@
 namespace DailyWire.Api.Models;
 
+[Obsolete]
 public class DwContinueListening : IDwModule
 {
     public string Typename => "ContinueListening";

@@ -1,5 +1,6 @@
 namespace DailyWire.Api.Models;
 
+[Obsolete]
 public class DwContinueWatching : IDwModule
 {
     public string Typename => "ContinueWatching";

@@ -1,5 +1,6 @@
 namespace DailyWire.Api.Models;
 
+[Obsolete]
 public class DwShow : IDwItem
 {
     public string Typename => "Show";

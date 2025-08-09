@@ -1,5 +1,6 @@
 namespace DailyWire.Api.Models;
 
+[Obsolete]
 public class DwEpisodeCarousel : IDwModule
 {
     public string Typename => "EpisodeCarousel";

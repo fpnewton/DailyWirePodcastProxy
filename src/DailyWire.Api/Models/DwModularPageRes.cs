@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 
 namespace DailyWire.Api.Models;
 
+[Obsolete]
 public class DwModularPageRes
 {
     public string Id { get; set; } = null!;

@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 
 namespace DailyWire.Api.Models;
 
+[Obsolete]
 public class DwHeadliner : IDwModule
 {
     public string Typename => "Headliner";

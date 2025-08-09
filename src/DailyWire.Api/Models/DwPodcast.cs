@@ -1,5 +1,6 @@
 namespace DailyWire.Api.Models;
 
+[Obsolete]
 public class DwPodcast
 {
     public string Id { get; set; } = null!;

@@ -1,5 +1,6 @@
 namespace DailyWire.Api.Models;
 
+[Obsolete]
 public class DwClip : IDwItem
 {
     public string Typename => "Clip";

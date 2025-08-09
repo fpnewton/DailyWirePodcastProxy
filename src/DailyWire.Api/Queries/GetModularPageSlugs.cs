@@ -6,17 +6,20 @@ using MediatR;
 
 namespace DailyWire.Api.Queries;
 
+[Obsolete]
 public class GetModularPageSlugsQuery : IRequest<Result<IList<DwModulePage>>>
 {
     public int First { get; set; }
     public int Skip { get; set; }
 }
 
+[Obsolete]
 public class GetModularPageSlugsQueryResponse
 {
     public IList<DwModulePage>? ModulePages { get; set; }
 }
 
+[Obsolete]
 public class GetModularPageSlugsQueryHandler(
     IGraphQLClient client
 ) : BaseDailyWireApiQueryHandler<GetModularPageSlugsQuery, GetModularPageSlugsQueryResponse, IList<DwModulePage>>(client)

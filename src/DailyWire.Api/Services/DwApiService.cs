@@ -5,6 +5,7 @@ using MediatR;
 
 namespace DailyWire.Api.Services;
 
+[Obsolete]
 public interface IDwApiService
 {
     public Task<Result<DwModularPageRes>> GetModularPage(string slug, CancellationToken cancellationToken);
@@ -23,6 +24,7 @@ public interface IDwApiService
     public Task<Result<IList<DwGetPodcastEpisodeRes>>> GetPodcastEpisodesBySeason(string seasonId, int first, int skip, CancellationToken cancellationToken);
 }
 
+[Obsolete]
 public class DwApiService(IMediator mediator) : IDwApiService
 {
     public async Task<Result<DwModularPageRes>> GetModularPage(string slug, CancellationToken cancellationToken)

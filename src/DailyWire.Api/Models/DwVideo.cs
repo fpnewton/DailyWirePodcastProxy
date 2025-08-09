@@ -1,5 +1,6 @@
 namespace DailyWire.Api.Models;
 
+[Obsolete]
 public class DwVideo
 {
     public string Id { get; set; } = null!;

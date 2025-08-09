@@ -2,6 +2,7 @@ using Newtonsoft.Json;
 
 namespace DailyWire.Api.Models;
 
+[Obsolete]
 public class DwGetPodcastEpisodeRes
 {
     [JsonProperty("__typename")]

@@ -1,5 +1,6 @@
 namespace DailyWire.Api.Models;
 
+[Obsolete]
 public class DwShowCarousel : IDwModule
 {
     public string Typename => "ShowCarousel";

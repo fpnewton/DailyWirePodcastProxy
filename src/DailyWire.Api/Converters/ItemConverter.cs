@@ -4,13 +4,14 @@ using Newtonsoft.Json.Linq;
 
 namespace DailyWire.Api.Converters;
 
+[Obsolete]
 public class ItemConverter : JsonConverter
 {
     private IEnumerable<Type> ItemTypes => GetType()
         .Assembly
         .GetTypes()
         .Where(t => t.IsAssignableTo(typeof(IDwItem)))
-        .Where(t => t.IsClass && !t.IsAbstract);
+        .Where(t => t is { IsClass: true, IsAbstract: false });
 
     public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
     {
@@ -49,6 +50,7 @@ public class ItemConverter : JsonConverter
         return objectType.IsAssignableTo(typeof(IDwItem));
     }
 
+    [Obsolete]
     private class ItemType : IDwItem
     {
         public string Typename { get; set; } = null!;

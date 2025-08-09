@@ -5,6 +5,7 @@ using MediatR;
 
 namespace DailyWire.Api.Queries;
 
+[Obsolete]
 public abstract class BaseDailyWireApiQueryHandler<TRequest, TResponseModel, TResponse>(IGraphQLClient client) : IRequestHandler<TRequest, Result<TResponse>>
     where TRequest : IRequest<Result<TResponse>>
 {
