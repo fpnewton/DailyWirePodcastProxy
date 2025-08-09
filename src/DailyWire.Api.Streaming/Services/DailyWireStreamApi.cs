@@ -5,8 +5,8 @@ namespace DailyWire.Api.Streaming.Services;
 
 public interface IDailyWireStreamApi
 {
-    public Task<HttpResponseMessage> GetAudioStream(string audioStreamUrl, CancellationToken cancellationToken);
-    public Task<HttpResponseMessage> GetAudioStream(string audioStreamUrl, Action<HttpRequestHeaders>? configureHeaders, CancellationToken cancellationToken);
+    public Task<HttpResponseMessage> GetMediaStream(string audioStreamUrl, CancellationToken cancellationToken);
+    public Task<HttpResponseMessage> GetMediaStream(string audioStreamUrl, Action<HttpRequestHeaders>? configureHeaders, CancellationToken cancellationToken);
 }
 
 public class DailyWireStreamApi(
@@ -14,10 +14,10 @@ public class DailyWireStreamApi(
     DwStreamingConfiguration configuration
 ) : IDailyWireStreamApi
 {
-    public Task<HttpResponseMessage> GetAudioStream(string audioStreamUrl, CancellationToken cancellationToken) =>
-        GetAudioStream(audioStreamUrl, null, cancellationToken);
+    public Task<HttpResponseMessage> GetMediaStream(string audioStreamUrl, CancellationToken cancellationToken) =>
+        GetMediaStream(audioStreamUrl, null, cancellationToken);
 
-    public async Task<HttpResponseMessage> GetAudioStream(string audioStreamUrl, Action<HttpRequestHeaders>? configureHeaders,
+    public async Task<HttpResponseMessage> GetMediaStream(string audioStreamUrl, Action<HttpRequestHeaders>? configureHeaders,
         CancellationToken cancellationToken)
     {
         var client = httpClientFactory.CreateClient(DwStreamingConstants.HttpClientStreamProxy);

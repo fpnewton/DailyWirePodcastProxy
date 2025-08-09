@@ -1,4 +1,7 @@
+using System.Text.Json.Serialization;
 using DailyWire.Api;
+using DailyWire.Api.Middleware;
+using DailyWire.Api.Streaming;
 using DailyWire.Authentication.Setup;
 using FastEndpoints;
 using FastEndpoints.Swagger;
@@ -20,6 +23,8 @@ builder.Services
     .AddFastEndpoints()
     .SwaggerDocument()
     .ConfigureDailyWireApi()
+    .ConfigureDailyWireMiddlewareApi()
+    .ConfigureDailyWireStreamingApi()
     .ConfigureDailyWireAuthentication()
     .ConfigurePodcastProxyWeb()
     .ConfigurePodcastProxyApi()
@@ -30,7 +35,10 @@ var app = builder.Build()
     .ConfigureHost()
     .ConfigureApi();
 
-app.UseFastEndpoints()
+app.UseFastEndpoints(config =>
+    {
+        config.Serializer.Options.Converters.Add(new JsonStringEnumConverter());
+    })
     .UseSwaggerGen();
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();

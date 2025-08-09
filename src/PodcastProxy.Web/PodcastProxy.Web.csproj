@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DailyWire.Api.Streaming\DailyWire.Api.Streaming.csproj" />
     <ProjectReference Include="..\DailyWire.Api\DailyWire.Api.csproj" />
     <ProjectReference Include="..\DailyWire.Authentication\DailyWire.Authentication.csproj" />
     <ProjectReference Include="..\PodcastProxy.Api\PodcastProxy.Api.csproj" />
