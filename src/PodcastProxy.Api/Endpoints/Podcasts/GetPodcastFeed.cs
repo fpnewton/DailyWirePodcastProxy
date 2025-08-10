@@ -1,9 +1,12 @@
 using System.Net;
 using System.Xml;
+using Ardalis.Result;
 using FastEndpoints;
 using Flurl;
 using PodcastProxy.Api.Extensions;
+using PodcastProxy.Application.Commands.Podcasts;
 using PodcastProxy.Application.Queries.Podcasts;
+using PodcastProxy.Application.Queries.Shows;
 
 namespace PodcastProxy.Api.Endpoints.Podcasts;
 
@@ -25,6 +28,35 @@ public class GetPodcastFeedEndpoint : Endpoint<GetPodcastFeedRequest>
 
     public override async Task HandleAsync(GetPodcastFeedRequest req, CancellationToken ct)
     {
+        var podcast = await new GetPodcastByIdQuery { PodcastId = req.PodcastId }.ExecuteAsync(ct);
+
+        if (!podcast.IsSuccess)
+        {
+            var shows = await new GetShowsQuery().ExecuteAsync(ct);
+
+            if (!shows.IsSuccess)
+            {
+                await this.SendResult(shows.Map(), ct);
+                return;
+            }
+
+            var show = shows.Value.FirstOrDefault(s => string.Equals(s.Show.Id, req.PodcastId, StringComparison.Ordinal));
+
+            if (show is null)
+            {
+                await Send.NotFoundAsync(ct);
+                return;
+            }
+
+            podcast = await new EnsurePodcastExistsCommand { PodcastSlug = show.Show.Slug }.ExecuteAsync(ct);
+
+            if (!podcast.IsSuccess)
+            {
+                await this.SendResult(shows.Map(), ct);
+                return;
+            }
+        }
+
         var feedUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}"
             .AppendPathSegment(HttpContext.Request.PathBase)
             .AppendPathSegment(HttpContext.Request.Path);
@@ -37,7 +69,7 @@ public class GetPodcastFeedEndpoint : Endpoint<GetPodcastFeedRequest>
 
         var document = await new GetPodcastFeedQuery
         {
-            PodcastId = req.PodcastId,
+            PodcastSlug = podcast.Value.Slug,
             FeedUrl = HttpContext.Request.Query.Aggregate(feedUrl, (url, pair) => url.SetQueryParam(pair.Key, pair.Value)),
             StreamUrl = streamUrl,
             StreamUrlSlug = WebUtility.UrlEncode(streamUrlSlug)

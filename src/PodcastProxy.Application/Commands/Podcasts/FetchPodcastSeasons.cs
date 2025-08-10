@@ -10,7 +10,7 @@ namespace PodcastProxy.Application.Commands.Podcasts;
 
 public class FetchPodcastSeasonsCommand : ICommand<Result<List<Season>>>
 {
-    public string PodcastId { get; set; } = string.Empty;
+    public string PodcastSlug { get; set; } = string.Empty;
 }
 
 public class FetchPodcastSeasonsCommandHandler(
@@ -19,14 +19,15 @@ public class FetchPodcastSeasonsCommandHandler(
 {
     public async Task<Result<List<Season>>> ExecuteAsync(FetchPodcastSeasonsCommand command, CancellationToken ct)
     {
-        var exists = await new EnsurePodcastExistsCommand { PodcastId = command.PodcastId }.ExecuteAsync(ct);
+        var podcast = await new EnsurePodcastExistsCommand { PodcastSlug = command.PodcastSlug }.ExecuteAsync(ct);
 
-        if (!exists.IsSuccess)
-            return exists.Map();
+        if (!podcast.IsSuccess)
+            return podcast.Map();
 
-        var spec = new SeasonByPodcastIdSpec(command.PodcastId);
+        var spec = new SeasonByPodcastIdSpec(podcast.Value.Id);
         var seasons = await repository.ListAsync(spec, ct);
-        var result = await FetchPodcastSeasons(command.PodcastId, ct);
+
+        var result = await FetchPodcastSeasons(podcast.Value.Id, command.PodcastSlug, ct);
 
         if (!result.IsSuccess)
             return result.Map();
@@ -47,9 +48,9 @@ public class FetchPodcastSeasonsCommandHandler(
         return result;
     }
 
-    private async Task<Result<List<Season>>> FetchPodcastSeasons(string podcastId, CancellationToken ct)
+    private async Task<Result<List<Season>>> FetchPodcastSeasons(string podcastId, string podcastSlug, CancellationToken ct)
     {
-        var seasons = await new GetShowSeasonsByShowIdQuery { ShowId = podcastId }.ExecuteAsync(ct);
+        var seasons = await new GetShowSeasonsByShowSlugQuery { Slug = podcastSlug }.ExecuteAsync(ct);
 
         return seasons.Map(s => MapEntitiesToSeasons(podcastId, s));
     }

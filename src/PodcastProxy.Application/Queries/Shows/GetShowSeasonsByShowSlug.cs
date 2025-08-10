@@ -5,23 +5,23 @@ using FastEndpoints;
 
 namespace PodcastProxy.Application.Queries.Shows;
 
-public class GetShowSeasonsByShowIdQuery : ICommand<Result<List<DwEntity>>>
+public class GetShowSeasonsByShowSlugQuery : ICommand<Result<List<DwEntity>>>
 {
-    public required string ShowId { get; set; }
+    public required string Slug { get; set; }
 }
 
-public class GetShowSeasonsByShowIdQueryHandler(
+public class GetShowSeasonsByShowSlugHandler(
     IDailyWireMiddlewareApi dwApiService
-) : ICommandHandler<GetShowSeasonsByShowIdQuery, Result<List<DwEntity>>>
+    ) : ICommandHandler<GetShowSeasonsByShowSlugQuery,  Result<List<DwEntity>>>
 {
-    public async Task<Result<List<DwEntity>>> ExecuteAsync(GetShowSeasonsByShowIdQuery command, CancellationToken ct)
+    public async Task<Result<List<DwEntity>>> ExecuteAsync(GetShowSeasonsByShowSlugQuery command, CancellationToken ct)
     {
         var userInfo = await dwApiService.GetUserInfo(ct);
 
         if (!userInfo.IsSuccess)
             return userInfo.Map();
 
-        var show = await new GetShowByIdQuery { Id = command.ShowId }.ExecuteAsync(ct);
+        var show = await new GetShowBySlugQuery { Slug = command.Slug }.ExecuteAsync(ct);
 
         if (!show.IsSuccess)
             return show.Map();

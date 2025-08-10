@@ -47,8 +47,6 @@ public class TokenService(ILogger<TokenService> logger, ITokenStore tokenStore, 
         
         if (ValidateAccessToken(tokens) && !string.IsNullOrEmpty(tokens.AccessToken))
         {
-            logger.LogInformation("Access token is valid");
-            
             return tokens.AccessToken;
         }
         
@@ -61,8 +59,6 @@ public class TokenService(ILogger<TokenService> logger, ITokenStore tokenStore, 
         
         if (ValidateAccessToken(tokens) && !string.IsNullOrEmpty(tokens.AccessToken))
         {
-            logger.LogInformation("Access token is valid");
-            
             return tokens.AccessToken;
         }
         

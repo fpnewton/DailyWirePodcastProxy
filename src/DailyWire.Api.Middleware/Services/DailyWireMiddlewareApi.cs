@@ -117,6 +117,20 @@ public class DailyWireMiddlewareApi(
         {
             var token = await tokenService.GetAccessToken(cancellationToken);
 
+            var url = configuration.BaseUrl
+                .AppendPathSegments("v4", "getPaginatedEpisodes")
+                .SetQueryParam("slug", slug)
+                .SetQueryParam("showSeasonId", showSeasonId)
+                .SetQueryParam("lastPodcastEpisodeId", lastPodcastEpisodeId)
+                .SetQueryParam("lastShowEpisodeId", lastShowEpisodeId)
+                .SetQueryParam("showOffset", showOffset)
+                .SetQueryParam("podcastOffset", podcastOffset)
+                .SetQueryParam("pageNumber", pageNumber)
+                .SetQueryParam("pageSize", pageSize)
+                .SetQueryParam("orderBy", $"{orderBy}_{JsonSerializer.Serialize(orderDirection)}")
+                .SetQueryParam("membershipPlan", membershipPlan)
+                .ToUri();
+
             var response = await configuration.BaseUrl
                 .AppendPathSegments("v4", "getPaginatedEpisodes")
                 .SetQueryParam("slug", slug)

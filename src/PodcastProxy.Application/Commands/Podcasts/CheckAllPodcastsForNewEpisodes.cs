@@ -16,7 +16,7 @@ public class CheckAllPodcastsForNewEpisodesCommandHandler : ICommandHandler<Chec
 
         foreach (var podcast in podcasts.Value)
         {
-            await new CheckPodcastForNewEpisodesCommand { PodcastId = podcast.Id }.ExecuteAsync(ct);
+            await new CheckPodcastForNewEpisodesCommand { PodcastSlug = podcast.Slug }.ExecuteAsync(ct);
         }
     }
 }

@@ -87,7 +87,7 @@ public class GetShowSeasonEpisodesBySeasonIdQueryHandler(
 
     private static IEnumerable<DwShowEpisode> GetPageShowEpisodes(DwPaginatedPage page)
     {
-        foreach (var component in page.ComponentItems)
+        foreach (var component in page.ComponentItems ?? [])
         {
             if (component is not DwShowEpisodeComponentItem showEpisode)
             {

@@ -9,7 +9,7 @@ namespace PodcastProxy.Application.Commands.Podcasts;
 
 public class FetchPodcastCommand : ICommand<Result<Podcast>>
 {
-    public string PodcastId { get; set; } = string.Empty;
+    public required string PodcastSlug { get; set; }
 }
 
 public class FetchPodcastCommandHandler(IRepository<Podcast> repository) : ICommandHandler<FetchPodcastCommand, Result<Podcast>>
@@ -21,7 +21,7 @@ public class FetchPodcastCommandHandler(IRepository<Podcast> repository) : IComm
         if (!result.IsSuccess)
             return result;
 
-        var spec = new PodcastByIdSpec(result.Value);
+        var spec = new PodcastBySlugSpec(result.Value.Slug);
         var podcast = await repository.FirstOrDefaultAsync(spec, ct);
 
         if (podcast is null)
@@ -30,6 +30,7 @@ public class FetchPodcastCommandHandler(IRepository<Podcast> repository) : IComm
         }
         else
         {
+            podcast.Id = result.Value.Id;
             podcast.Name = result.Value.Name;
             podcast.Description = result.Value.Description;
             podcast.Status = result.Value.Status;
@@ -40,13 +41,15 @@ public class FetchPodcastCommandHandler(IRepository<Podcast> repository) : IComm
 
             await repository.UpdateAsync(podcast, ct);
         }
+        
+        await new FetchPodcastSeasonsCommand { PodcastSlug = command.PodcastSlug }.ExecuteAsync(ct);
 
         return result;
     }
 
     private static async Task<Result<Podcast>> FetchPodcast(FetchPodcastCommand command, CancellationToken ct)
     {
-        var showItem = await new GetShowByIdQuery { Id = command.PodcastId }.ExecuteAsync(ct);
+        var showItem = await new GetShowBySlugQuery { Slug = command.PodcastSlug }.ExecuteAsync(ct);
 
         if (!showItem.IsSuccess)
             return showItem.Map();

@@ -1,13 +1,12 @@
 using System.Xml.Linq;
 using Ardalis.Result;
 using FastEndpoints;
-using PodcastProxy.Application.Commands.Podcasts;
 
 namespace PodcastProxy.Application.Queries.Podcasts;
 
 public class GetPodcastFeedQuery : ICommand<Result<XDocument>>
 {
-    public required string PodcastId { get; set; }
+    public required string PodcastSlug { get; set; }
     public required string FeedUrl { get; set; }
     public required string StreamUrl { get; set; }
     public required string StreamUrlSlug { get; set; }
@@ -17,9 +16,7 @@ public class GetPodcastFeedQueryHandler : ICommandHandler<GetPodcastFeedQuery, R
 {
     public async Task<Result<XDocument>> ExecuteAsync(GetPodcastFeedQuery command, CancellationToken ct)
     {
-        await new EnsurePodcastExistsCommand { PodcastId = command.PodcastId }.ExecuteAsync(ct);
-
-        var podcast = await new GetPodcastByIdQuery { PodcastId = command.PodcastId }.ExecuteAsync(ct);
+        var podcast = await new GetPodcastBySlugQuery { Slug = command.PodcastSlug }.ExecuteAsync(ct);
 
         if (!podcast.IsSuccess)
         {
@@ -83,11 +80,21 @@ public class GetPodcastFeedQueryHandler : ICommandHandler<GetPodcastFeedQuery, R
             );
         }
 
-        var seasons = podcast.Value.Seasons.OrderByDescending(s => s.Slug).ToList();
+        var seasonsResult = await new GetPodcastSeasonsByPodcastSlugQuery { PodcastSlug = command.PodcastSlug }.ExecuteAsync(ct);
+
+        if (!seasonsResult.IsSuccess)
+            return seasonsResult.Map();
+
+        var seasons = seasonsResult.Value.OrderByDescending(s => s.Slug).ToList();
 
         foreach (var season in seasons)
         {
-            var episodes = season.Episodes.OrderByDescending(s => s.PublishDate).ToList();
+            var episodesResult = await new GetPodcastEpisodesBySeasonIdQuery { SeasonId = season.SeasonId }.ExecuteAsync(ct);
+
+            if (!episodesResult.IsSuccess)
+                return episodesResult.Map();
+
+            var episodes = episodesResult.Value.OrderByDescending(s => s.PublishDate).ToList();
 
             foreach (var episode in episodes)
             {
@@ -122,7 +129,7 @@ public class GetPodcastFeedQueryHandler : ICommandHandler<GetPodcastFeedQuery, R
 
                 var enclosure = new XElement("enclosure", new XAttribute("type", "audio/m4a"));
                 var streamUrl = command.StreamUrl.Replace(command.StreamUrlSlug, episode.Slug);
-                
+
                 enclosure.Add(new XAttribute("url", streamUrl));
 
                 if (episode.Duration.HasValue)
