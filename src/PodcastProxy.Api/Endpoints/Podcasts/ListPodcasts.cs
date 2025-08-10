@@ -1,17 +1,14 @@
+using Ardalis.Result;
 using FastEndpoints;
 using Flurl;
-using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using PodcastProxy.Application.Queries;
+using PodcastProxy.Application.Queries.Podcasts;
 using PodcastProxy.Domain.Entities;
 
 namespace PodcastProxy.Api.Endpoints.Podcasts;
 
-public class ListPodcastsEndpoint(
-    IConfiguration configuration,
-    IMediator mediator
-) : EndpointWithoutRequest
+public class ListPodcastsEndpoint(IConfiguration configuration) : EndpointWithoutRequest
 {
     public override void Configure()
     {
@@ -25,11 +22,11 @@ public class ListPodcastsEndpoint(
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var query = new GetPodcastsQuery();
-        var result = await mediator.Send(query, ct);
-        var response = MapPodcastsResponse(result).ToList();
+        var podcasts = await new GetPodcastsQuery().ExecuteAsync(ct);
+        var result = podcasts.Map(MapPodcastsResponse);
+        var response = result.IsSuccess ? result.Value.ToList() : [];
 
-        await SendOkAsync(response, ct);
+        await Send.OkAsync(response, ct);
     }
 
     private IEnumerable<PodcastResponse> MapPodcastsResponse(ICollection<Podcast> podcasts)

@@ -1,14 +1,13 @@
+using System.Text.Json;
 using Ardalis.Result;
 using DailyWire.Api.Middleware.Enums;
 using DailyWire.Api.Middleware.Models;
-using DailyWire.Api.Middleware.Models.ComponentItems;
-using DailyWire.Api.Middleware.Models.Components;
-using DailyWire.Api.Middleware.Services;
 using FastEndpoints;
 using Flurl;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using PodcastProxy.Api.Extensions;
+using PodcastProxy.Application.Queries.Shows;
 
 namespace PodcastProxy.Api.Endpoints.DailyWire;
 
@@ -27,9 +26,8 @@ public class GetPodcastShowSeasonEpisodesRequest
 }
 
 public class GetPodcastShowSeasonEpisodesEndpoint(
-    IConfiguration configuration,
-    IDailyWireMiddlewareApi dwApiService
-    ) : Endpoint<GetPodcastShowSeasonEpisodesRequest, PodcastShowSeasonEpisodesResponse>
+    IConfiguration configuration
+) : Endpoint<GetPodcastShowSeasonEpisodesRequest, PodcastShowSeasonEpisodesResponse>
 {
     public override void Configure()
     {
@@ -39,89 +37,69 @@ public class GetPodcastShowSeasonEpisodesEndpoint(
 
     public override async Task HandleAsync(GetPodcastShowSeasonEpisodesRequest req, CancellationToken ct)
     {
-        var userInfo = await dwApiService.GetUserInfo(ct);
-
-        if (!userInfo.IsSuccess)
+        var episodes = await new GetShowSeasonEpisodesBySeasonIdQuery
         {
-            AddError("Failed to get user info.");
-
-            await SendErrorsAsync(StatusCodes.Status412PreconditionFailed, ct);
-            return;
-        }
-
-        var page = await dwApiService.GetPaginatedEpisodes(req.ShowSlug, req.SeasonId, req.LastPodcastEpisodeId, req.LastShowEpisodeId, req.ShowOffset ?? 0,
-            req.PodcastOffset ?? 0, req.PageNumber ?? 1, req.PageSize ?? 10, req.OrderBy ?? "CreatedAt", req.OrderDirection ?? DwSortOrderDirection.Descending,
-            userInfo.Value.AccessLevel, ct);
+            ShowSlug = req.ShowSlug,
+            SeasonId = req.SeasonId,
+            LastPodcastEpisodeId = req.LastPodcastEpisodeId,
+            LastShowEpisodeId = req.LastShowEpisodeId,
+            ShowOffset = req.ShowOffset,
+            PodcastOffset = req.PodcastOffset,
+            PageNumber = req.PageNumber,
+            PageSize = req.PageSize,
+            OrderBy = req.OrderBy,
+            OrderDirection = req.OrderDirection
+        }.ExecuteAsync(ct);
 
         string? nextPageUrl = null;
 
-        if (page.IsSuccess && !string.IsNullOrEmpty(page.Value.NextPageUrl))
+        if (episodes.IsSuccess && episodes.Value.NextPage is not null)
         {
             var scheme = HttpContext.Request.Scheme;
             var host = HttpContext.Request.Host;
 
-            var middlewareNextUrl = new Url(page.Value.NextPageUrl);
-            
-            var nextUrl = new Url($"{scheme}://{host}")
+            nextPageUrl = new Url($"{scheme}://{host}")
                 .AppendPathSegment(configuration["Host:BasePath"])
                 .AppendPathSegments("daily-wire", "podcasts", req.ShowSlug, "seasons", req.SeasonId, "episodes")
-                .SetQueryParam("auth", configuration["Authentication:AccessKey"]);
-
-            var paramList = new List<string>
-            {
-                "lastPodcastEpisodeId",
-                "lastShowEpisodeId",
-                "showOffset",
-                "podcastOffset",
-                "pageNumber",
-                "pageSize",
-                "orderBy",
-                "orderDirection",
-            };
-
-            foreach (var param in paramList)
-            {
-                if (middlewareNextUrl.QueryParams.Contains(param))
-                {
-                    nextUrl.SetQueryParam(param, middlewareNextUrl.QueryParams.GetAll(param));
-                }
-            }
-
-            nextPageUrl = nextUrl.ToString();
+                .SetQueryParam("auth", configuration["Authentication:AccessKey"])
+                .SetQueryParam("lastPodcastEpisodeId", episodes.Value.NextPage.LastPodcastEpisodeId)
+                .SetQueryParam("lastShowEpisodeId", episodes.Value.NextPage.LastShowEpisodeId)
+                .SetQueryParam("showOffset", req.ShowOffset)
+                .SetQueryParam("podcastOffset", req.PodcastOffset)
+                .SetQueryParam("pageNumber", req.PageNumber)
+                .SetQueryParam("pageSize", req.PageSize)
+                .SetQueryParam("orderBy", req.OrderBy)
+                .SetQueryParam("orderDirection", JsonSerializer.Serialize(req.OrderDirection))
+                .ToString();
         }
 
-        var result = page.Map(MapPaginatedPage)
+        var result = episodes
             .Map(p => new PodcastShowSeasonEpisodesResponse
             {
-                Episodes = p.ToList(),
+                Episodes = MapShowEpisodes(p.Episodes).ToList(),
                 NextPageUrl = nextPageUrl
             });
 
         await this.SendResult(result, ct);
     }
 
-    private static IEnumerable<PodcastShowSeasonEpisodeOverview> MapPaginatedPage(DwPaginatedPage page)
+    private static IEnumerable<PodcastShowSeasonEpisodeOverview> MapShowEpisodes(IList<DwShowEpisode> episodes)
     {
-        foreach (var component in page.ComponentItems)
+        foreach (var episode in episodes)
         {
-            if (component is not DwShowEpisodeComponentItem showEpisode)
-            {
-                continue;
-            }
-
             yield return new PodcastShowSeasonEpisodeOverview
             {
-                Id = showEpisode.ShowEpisode.Id,
-                Slug = showEpisode.ShowEpisode.Slug,
-                Title = showEpisode.ShowEpisode.Title,
-                Description = showEpisode.ShowEpisode.Description,
-                Duration = showEpisode.ShowEpisode.Duration,
-                MediaType = showEpisode.ShowEpisode.MediaType,
-                SharingUrl = showEpisode.ShowEpisode.SharingUrl,
-                ThumbnailUrl = showEpisode.ShowEpisode.Images.Thumbnail.Landscape,
-                Status = showEpisode.ShowEpisode.Status,
-                PublishedAt = showEpisode.ShowEpisode.PublishedAt,
-                ScheduledAt = showEpisode.ShowEpisode.ScheduledAt
+                Id = episode.Id,
+                Slug = episode.Slug,
+                Title = episode.Title,
+                Description = episode.Description,
+                Duration = episode.Duration,
+                MediaType = episode.MediaType,
+                SharingUrl = episode.SharingUrl,
+                ThumbnailUrl = episode.Images.Thumbnail.Landscape,
+                Status = episode.Status,
+                PublishedAt = episode.PublishedAt,
+                ScheduledAt = episode.ScheduledAt
             };
         }
     }

@@ -1,11 +1,10 @@
 using FastEndpoints;
-using MediatR;
 using Microsoft.AspNetCore.Http;
-using PodcastProxy.Application.Commands.CheckAllNewEpisodes;
+using PodcastProxy.Application.Commands.Podcasts;
 
 namespace PodcastProxy.Api.Endpoints.Podcasts;
 
-public class CheckPodcastsForNewEpisodes(IMediator mediator) : EndpointWithoutRequest
+public class CheckPodcastsForNewEpisodes : EndpointWithoutRequest
 {
     public override void Configure()
     {
@@ -15,10 +14,8 @@ public class CheckPodcastsForNewEpisodes(IMediator mediator) : EndpointWithoutRe
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var command = new CheckAllNewEpisodesCommand();
-        
-        await mediator.Send(command, ct);
+        await new CheckAllPodcastsForNewEpisodesCommand().ExecuteAsync(ct);
 
-        await SendOkAsync(ct);
+        await Send.OkAsync(ct);
     }
 }

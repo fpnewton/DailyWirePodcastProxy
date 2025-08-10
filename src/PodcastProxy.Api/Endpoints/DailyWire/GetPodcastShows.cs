@@ -1,21 +1,16 @@
 using System.Diagnostics.CodeAnalysis;
 using Ardalis.Result;
-using DailyWire.Api.Middleware.Models;
-using DailyWire.Api.Middleware.Models.Components;
 using DailyWire.Api.Middleware.Models.Items;
-using DailyWire.Api.Middleware.Services;
 using FastEndpoints;
 using Flurl;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using PodcastProxy.Api.Extensions;
+using PodcastProxy.Application.Queries.Shows;
 
 namespace PodcastProxy.Api.Endpoints.DailyWire;
 
-public class GetPodcastShowsEndpoint(
-    IConfiguration configuration,
-    IDailyWireMiddlewareApi dwApiService
-) : EndpointWithoutRequest<ICollection<PodcastShowOverview>>
+public class GetPodcastShowsEndpoint(IConfiguration configuration) : EndpointWithoutRequest<ICollection<PodcastShowOverview>>
 {
     public override void Configure()
     {
@@ -29,26 +24,16 @@ public class GetPodcastShowsEndpoint(
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var userInfo = await dwApiService.GetUserInfo(ct);
-        
-        if (!userInfo.IsSuccess)
-        {
-            AddError("Failed to get user info.");
+        var shows = await new GetShowsQuery().ExecuteAsync(ct);
 
-            await SendErrorsAsync(StatusCodes.Status412PreconditionFailed, ct);
-            return;
-        }
-
-        var page = await dwApiService.GetPage("watch-page", userInfo.Value.AccessLevel, ct);
-
-        var result = page
-            .Map(MapPageToPodcastOverview)
-            .Map(r => r.ToList());
+        var result = shows
+            .Map(MapShowItemsToPodcastOverviews)
+            .Map(o => o.ToList());
 
         await this.SendResult(result, ct);
     }
 
-    private IEnumerable<PodcastShowOverview> MapPageToPodcastOverview(DwPage page)
+    private IEnumerable<PodcastShowOverview> MapShowItemsToPodcastOverviews(IList<DwShowItem> shows)
     {
         var scheme = HttpContext.Request.Scheme;
         var host = HttpContext.Request.Host;
@@ -58,29 +43,16 @@ public class GetPodcastShowsEndpoint(
             .AppendPathSegment("podcasts")
             .SetQueryParam("auth", configuration["Authentication:AccessKey"]);
 
-        foreach (var component in page.Components)
+        foreach (var show in shows)
         {
-            if (component is not DwSquareShowCarouselComponent showCarousel)
+            yield return new PodcastShowOverview
             {
-                continue;
-            }
-            
-            foreach (var item in showCarousel.Items)
-            {
-                if (item is not DwShowItem show)
-                {
-                    continue;
-                }
-            
-                yield return new PodcastShowOverview
-                {
-                    Id = show.Show.Id,
-                    Slug = show.Show.Slug,
-                    Name = show.Show.Title,
-                    Description = show.Show.Description,
-                    Feed = baseUrl.Clone().AppendPathSegments(show.Show.Id, "feed").ToUri()
-                };
-            }
+                Id = show.Show.Id,
+                Slug = show.Show.Slug,
+                Name = show.Show.Title,
+                Description = show.Show.Description,
+                Feed = baseUrl.Clone().AppendPathSegments(show.Show.Id, "feed").ToUri()
+            };
         }
     }
 }

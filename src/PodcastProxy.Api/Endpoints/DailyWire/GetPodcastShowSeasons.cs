@@ -1,12 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using Ardalis.Result;
 using DailyWire.Api.Middleware.Models;
-using DailyWire.Api.Middleware.Services;
-using DailyWire.Api.Models;
 using FastEndpoints;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using PodcastProxy.Api.Extensions;
+using PodcastProxy.Application.Queries.Shows;
 
 namespace PodcastProxy.Api.Endpoints.DailyWire;
 
@@ -15,7 +12,7 @@ public class GetPodcastShowSeasonsRequest
     public string PodcastSlug { get; set; } = string.Empty;
 }
 
-public class GetPodcastShowSeasonsEndpoint(IDailyWireMiddlewareApi dwApiService) : Endpoint<GetPodcastShowSeasonsRequest>
+public class GetPodcastShowSeasonsEndpoint : Endpoint<GetPodcastShowSeasonsRequest>
 {
     public override void Configure()
     {
@@ -26,30 +23,19 @@ public class GetPodcastShowSeasonsEndpoint(IDailyWireMiddlewareApi dwApiService)
         Get("daily-wire/podcasts/{PodcastSlug}/seasons");
     }
 
-    [ProducesResponseType(typeof(IList<DwSeasonDetails>), StatusCodes.Status200OK)]
     public override async Task HandleAsync(GetPodcastShowSeasonsRequest req, CancellationToken ct)
     {
-        var userInfo = await dwApiService.GetUserInfo(ct);
+        var seasons = await new GetShowSeasonsQuery { ShowSlug = req.PodcastSlug }.ExecuteAsync(ct);
 
-        if (!userInfo.IsSuccess)
-        {
-            AddError("Failed to get user info.");
-
-            await SendErrorsAsync(StatusCodes.Status412PreconditionFailed, ct);
-            return;
-        }
-
-        var page = await dwApiService.GetShowPage(req.PodcastSlug, userInfo.Value.AccessLevel, ct);
-
-        var result = page
+        var result = seasons
             .Map(MapSeasonDetailsToPodcastSeasonOverview)
             .Map(r => r.ToList());
 
         await this.SendResult(result, ct);
     }
 
-    private static IEnumerable<PodcastShowSeasonOverview> MapSeasonDetailsToPodcastSeasonOverview(DwShowPage details) =>
-        details.Show.Seasons.Select(season => new PodcastShowSeasonOverview
+    private static IEnumerable<PodcastShowSeasonOverview> MapSeasonDetailsToPodcastSeasonOverview(IList<DwEntity> seasons) => seasons
+        .Select(season => new PodcastShowSeasonOverview
         {
             Id = season.Id,
             Slug = season.Slug,

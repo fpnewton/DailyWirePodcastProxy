@@ -1,5 +1,6 @@
 using DailyWire.Authentication.Models;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using PodcastProxy.Domain.Models;
 using PodcastProxy.Domain.Services;
 using PodcastProxy.Web.Services;
 
@@ -15,6 +16,17 @@ public static class PodcastProxyWebSetup
         services.TryAddSingleton(ProvideOAuthConfiguration);
 
         services.TryAddSingleton<IAuthenticationDetailsProvider, AuthenticationDetailsProvider>();
+        
+        services.TryAddSingleton(provider =>
+        {
+            var configuration = provider.GetRequiredService<IConfiguration>();
+            var section = configuration.GetSection("DailyWireApi");
+            var config = new DailyWireConfig();
+            
+            section.Bind(config);
+
+            return config;
+        });
 
         return services;
     }

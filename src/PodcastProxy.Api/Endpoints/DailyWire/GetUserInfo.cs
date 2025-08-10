@@ -6,6 +6,7 @@ using PodcastProxy.Api.Extensions;
 
 namespace PodcastProxy.Api.Endpoints.DailyWire;
 
+#if DEBUG
 public class GetUserInfoEndpoint(IDailyWireMiddlewareApi api) : EndpointWithoutRequest<DwUserInfo>
 {
     public override void Configure()
@@ -21,3 +22,4 @@ public class GetUserInfoEndpoint(IDailyWireMiddlewareApi api) : EndpointWithoutR
         await this.SendResult(result, ct);
     }
 }
+#endif

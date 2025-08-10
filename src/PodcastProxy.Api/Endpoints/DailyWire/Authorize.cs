@@ -22,12 +22,12 @@ public class AuthorizeEndpoint(ITokenStore tokenStore, DeviceCodeLoginHandler ha
 
         if (!result.IsSuccess)
         {
-            await SendErrorsAsync(cancellation: ct);
+            await Send.ErrorsAsync(cancellation: ct);
             return;
         }
 
         await tokenStore.StoreAuthenticationTokensAsync(result.Value, ct);
         
-        await SendOkAsync(ct);
+        await Send.OkAsync(ct);
     }
 }

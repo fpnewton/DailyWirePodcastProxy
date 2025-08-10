@@ -27,7 +27,7 @@ public class GetPageEndpoint(IDailyWireMiddlewareApi api) : Endpoint<GetPageRequ
         {
             AddError("Failed to get user info.");
 
-            await SendErrorsAsync(StatusCodes.Status412PreconditionFailed, ct);
+            await Send.ErrorsAsync(StatusCodes.Status412PreconditionFailed, ct);
             return;
         }
 

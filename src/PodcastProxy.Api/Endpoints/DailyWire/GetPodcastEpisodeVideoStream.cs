@@ -37,7 +37,7 @@ public class GetPodcastEpisodeVideoStreamEndpoint(
 
         if (episode.Value.Status != DwStatus.Published)
         {
-            await SendNotFoundAsync(ct);
+            await Send.NotFoundAsync(ct);
             return;
         }
 
@@ -45,7 +45,7 @@ public class GetPodcastEpisodeVideoStreamEndpoint(
         {
             AddError("Episode video url is not valid.");
 
-            await SendErrorsAsync(StatusCodes.Status422UnprocessableEntity, ct);
+            await Send.ErrorsAsync(StatusCodes.Status422UnprocessableEntity, ct);
             return;
         }
 

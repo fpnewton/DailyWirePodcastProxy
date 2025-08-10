@@ -37,7 +37,7 @@ public class GetPodcastEpisodeAudioStreamEndpoint(
 
         if (episode.Value.Status != DwStatus.Published)
         {
-            await SendNotFoundAsync(ct);
+            await Send.NotFoundAsync(ct);
             return;
         }
 
@@ -45,7 +45,7 @@ public class GetPodcastEpisodeAudioStreamEndpoint(
         {
             AddError("Episode audio url is not valid.");
 
-            await SendErrorsAsync(StatusCodes.Status422UnprocessableEntity, ct);
+            await Send.ErrorsAsync(StatusCodes.Status422UnprocessableEntity, ct);
             return;
         }
 
