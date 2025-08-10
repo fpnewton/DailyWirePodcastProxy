@@ -44,7 +44,6 @@ public class AuthKeyAuthorizationHandler(
             if (keyMatches)
             {
                 context.Succeed(requirement);
-                logger.LogInformation("Authorization succeeded");
             }
             else
             {
