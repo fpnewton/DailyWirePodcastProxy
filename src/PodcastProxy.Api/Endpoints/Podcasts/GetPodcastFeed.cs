@@ -3,6 +3,7 @@ using System.Xml;
 using Ardalis.Result;
 using FastEndpoints;
 using Flurl;
+using Microsoft.Extensions.Configuration;
 using PodcastProxy.Api.Extensions;
 using PodcastProxy.Application.Commands.Podcasts;
 using PodcastProxy.Application.Queries.Podcasts;
@@ -15,7 +16,7 @@ public class GetPodcastFeedRequest
     public string PodcastId { get; set; } = string.Empty;
 }
 
-public class GetPodcastFeedEndpoint : Endpoint<GetPodcastFeedRequest>
+public class GetPodcastFeedEndpoint(IConfiguration configuration) : Endpoint<GetPodcastFeedRequest>
 {
     public override void Configure()
     {
@@ -65,7 +66,8 @@ public class GetPodcastFeedEndpoint : Endpoint<GetPodcastFeedRequest>
 
         var streamUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}"
             .AppendPathSegment(HttpContext.Request.PathBase)
-            .AppendPathSegments("daily-wire", "podcasts", "episodes", streamUrlSlug, "streams", "audio");
+            .AppendPathSegments("daily-wire", "podcasts", "episodes", streamUrlSlug, "streams", "audio")
+            .SetQueryParam("auth", configuration["Authentication:AccessKey"]);
 
         var document = await new GetPodcastFeedQuery
         {
