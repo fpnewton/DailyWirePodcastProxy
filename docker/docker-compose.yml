@@ -1,0 +1,13 @@
+version: '3'
+services:
+  DailyWire-Podcast-Proxy:
+    container_name: dailywirepodcastproxy
+    image: ghcr.io/fpnewton/dailywirepodcastproxy:master
+    restart: unless-stopped
+    cap_add:
+      - SYS_ADMIN
+    ports:
+      - 9473:9473
+    volumes:
+      - ./DailyWirePodcastProxy.ini:/app/DailyWirePodcastProxy.ini
+      - ./data:/app/data
