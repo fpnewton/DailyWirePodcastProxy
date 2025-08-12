@@ -1,22 +1,29 @@
-FROM ubuntu:latest
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
 
-# Copy source files
-COPY publish/linux-x64 /opt/publish/linux-x64
+COPY ./ ./
 
-# Configure non-root user
-RUN adduser dwpp
+# Restore NuGet packages
+RUN dotnet restore DailyWirePodcastProxy.sln
+# Build the solution
+RUN dotnet build DailyWirePodcastProxy.sln -c Release --no-restore
+# Publish the Web API startup project
+RUN dotnet publish \
+           src/PodcastProxy.Web/PodcastProxy.Web.csproj \
+        -c Release \
+        --output publish \
+        --force \
+        --no-restore
 
-# Set permissions
-RUN chown -R dwpp:root /opt/publish/linux-x64
 
-# Change user
-USER dwpp
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 
-# Set working directory
-WORKDIR /opt/publish/linux-x64
+WORKDIR /app
 
-# Expose port
+# copy published bits
+COPY --from=build /src/publish ./ 
+
 EXPOSE 9473
+ENV ASPNETCORE_URLS=http://0.0.0.0:9473
 
-# Run PodcastProxy.Web
-ENTRYPOINT /opt/publish/linux-x64/PodcastProxy.Web
+ENTRYPOINT ["dotnet", "PodcastProxy.Web.dll"]

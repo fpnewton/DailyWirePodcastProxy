@@ -21,12 +21,6 @@
     <ProjectReference Include="..\PodcastProxy.Domain\PodcastProxy.Domain.csproj" />
     <ProjectReference Include="..\PodcastProxy.Host\PodcastProxy.Host.csproj" />
   </ItemGroup>
-
-    <ItemGroup>
-      <Content Include="..\..\.dockerignore">
-        <Link>.dockerignore</Link>
-      </Content>
-    </ItemGroup>
   
     <ItemGroup>
       <None Update="DailyWirePodcastProxy.ini">
