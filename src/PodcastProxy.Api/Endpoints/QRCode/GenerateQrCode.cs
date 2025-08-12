@@ -21,6 +21,6 @@ public class GenerateQrCodeEndpoint : Endpoint<GenerateQrCodeRequest>
         using var data = generator.CreateQrCode(req.Uri.ToString(), QRCodeGenerator.ECCLevel.L);
         using var png = new PngByteQRCode(data);
         
-        await SendBytesAsync(png.GetGraphic(10), contentType: "image/png", cancellation: ct);
+        await Send.BytesAsync(png.GetGraphic(10), contentType: "image/png", cancellation: ct);
     }
 }

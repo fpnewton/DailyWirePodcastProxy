@@ -1,19 +1,18 @@
-using MediatR;
-using Microsoft.Extensions.DependencyInjection;
-using PodcastProxy.Application.Commands.CheckAllNewEpisodes;
+using FastEndpoints;
+using Microsoft.Extensions.Logging;
+using PodcastProxy.Application.Commands.Podcasts;
 using Quartz;
 
 namespace PodcastProxy.Host.Jobs;
 
-public class CheckForNewEpisodesJob(IServiceProvider serviceProvider) : IJob
+public class CheckForNewEpisodesJob(ILogger<CheckForNewEpisodesJob> logger) : IJob
 {
     public async Task Execute(IJobExecutionContext context)
     {
-        await using var scope = serviceProvider.CreateAsyncScope();
-
-        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-        var command = new CheckAllNewEpisodesCommand();
-
-        await mediator.Send(command, context.CancellationToken);
+        logger.LogInformation("Checking for new episodes.");
+        
+        await new CheckAllPodcastsForNewEpisodesCommand().ExecuteAsync(context.CancellationToken);
+        
+        logger.LogInformation("Finished checking for new episodes.");
     }
 }

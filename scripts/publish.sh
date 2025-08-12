@@ -54,10 +54,9 @@ for target in "${_TARGETS[@]}"; do
     --self-contained true \
     -p:PublishSingleFile=true \
     -p:IncludeNativeLibrariesForSelfExtract=true \
-    -p:PublishReadyToRun=true \
     --output "${_OUTPUT_DIR}/${target}" \
     --force \
-    --no-restore --no-build  # Avoid redundant restore/build
+    --no-restore
 done
 
 # Move back to the output directory for zipping

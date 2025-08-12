@@ -15,21 +15,34 @@ public class Episode : IEntity
     public string Slug { get; set; } = null!;
     public string? Title { get; set; }
     public string? Description { get; set; }
+    
+    [Obsolete("No longer available")]
     public string? Audio { get; set; }
+    [Obsolete("No longer available")]
     public double? ListenTime { get; set; }
+    [Obsolete("No longer available")]
     public IList<string> AllowedContinents = new List<string>();
     public Uri? Thumbnail { get; set; }
     public double? Duration { get; set; }
+    
+    [Obsolete("No longer available")]
     public double? Rating { get; set; }
+    [Obsolete("No longer available")]
     public string? Status { get; set; }
+    [Obsolete("No longer available")]
     public string? AudioState { get; set; }
+    
     public DateTimeOffset? PublishDate { get; set; }
+    
+    [Obsolete("No longer available")]
     public DateTimeOffset? CreatedAt { get; set; }
+    [Obsolete("No longer available")]
     public DateTimeOffset? UpdatedAt { get; set; }
     public DateTimeOffset? ScheduleAt { get; set; }
 
     public Season Season { get; set; } = null!;
 
+    [Obsolete]
     public string? AudioMimeType
     {
         get

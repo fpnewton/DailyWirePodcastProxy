@@ -9,11 +9,11 @@
     </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ini-parser-netstandard" Version="2.5.2" />
+    <PackageReference Include="ini-parser-netstandard" Version="2.5.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DailyWire.Api\DailyWire.Api.csproj" />
+    <ProjectReference Include="..\DailyWire.Api.Streaming\DailyWire.Api.Streaming.csproj" />
     <ProjectReference Include="..\DailyWire.Authentication\DailyWire.Authentication.csproj" />
     <ProjectReference Include="..\PodcastProxy.Api\PodcastProxy.Api.csproj" />
     <ProjectReference Include="..\PodcastProxy.Application\PodcastProxy.Application.csproj" />

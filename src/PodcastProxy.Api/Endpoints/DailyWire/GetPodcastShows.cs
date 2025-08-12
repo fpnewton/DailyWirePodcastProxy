@@ -1,19 +1,16 @@
 using System.Diagnostics.CodeAnalysis;
 using Ardalis.Result;
-using DailyWire.Api.Models;
-using DailyWire.Api.Services;
+using DailyWire.Api.Middleware.Models.Items;
 using FastEndpoints;
 using Flurl;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using PodcastProxy.Api.Extensions;
+using PodcastProxy.Application.Queries.Shows;
 
 namespace PodcastProxy.Api.Endpoints.DailyWire;
 
-public class GetPodcastShowsEndpoint(
-    IConfiguration configuration,
-    IDwApiService dwApiService
-) : EndpointWithoutRequest<ICollection<PodcastShowOverview>>
+public class GetPodcastShowsEndpoint(IConfiguration configuration) : EndpointWithoutRequest<ICollection<PodcastShowOverview>>
 {
     public override void Configure()
     {
@@ -27,16 +24,16 @@ public class GetPodcastShowsEndpoint(
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var podcasts = await dwApiService.GetModularPage("listen", ct);
+        var shows = await new GetShowsQuery().ExecuteAsync(ct);
 
-        var result = podcasts
-            .Map(MapModularPageToPodcastOverview)
-            .Map(r => r.ToList());
+        var result = shows
+            .Map(MapShowItemsToPodcastOverviews)
+            .Map(o => o.ToList());
 
         await this.SendResult(result, ct);
     }
 
-    private IEnumerable<PodcastShowOverview> MapModularPageToPodcastOverview(DwModularPageRes modularPage)
+    private IEnumerable<PodcastShowOverview> MapShowItemsToPodcastOverviews(IList<DwShowItem> shows)
     {
         var scheme = HttpContext.Request.Scheme;
         var host = HttpContext.Request.Host;
@@ -46,22 +43,16 @@ public class GetPodcastShowsEndpoint(
             .AppendPathSegment("podcasts")
             .SetQueryParam("auth", configuration["Authentication:AccessKey"]);
 
-        foreach (var module in modularPage.Modules)
+        foreach (var show in shows)
         {
-            if (module is not DwPodcastCarousel carousel)
-                continue;
-
-            foreach (var podcast in carousel.Podcasts)
+            yield return new PodcastShowOverview
             {
-                yield return new PodcastShowOverview
-                {
-                    Id = podcast.Id,
-                    Slug = podcast.Slug,
-                    Name = podcast.Name,
-                    Description = podcast.Description,
-                    Feed = baseUrl.Clone().AppendPathSegments(podcast.Id, "feed").ToUri()
-                };
-            }
+                Id = show.Show.Id,
+                Slug = show.Show.Slug,
+                Name = show.Show.Title,
+                Description = show.Show.Description,
+                Feed = baseUrl.Clone().AppendPathSegments(show.Show.Id, "feed").ToUri()
+            };
         }
     }
 }
@@ -73,5 +64,5 @@ public class PodcastShowOverview
     public string? Slug { get; set; }
     public string? Name { get; set; }
     public string? Description { get; set; }
-    public Uri Feed { get; set; } = default!;
+    public Uri Feed { get; set; } = null!;
 }

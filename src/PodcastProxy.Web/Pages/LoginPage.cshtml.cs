@@ -1,6 +1,5 @@
 using Auth0.AuthenticationApi.Models;
 using DailyWire.Authentication.Handlers;
-using DailyWire.Authentication.Models;
 using DailyWire.Authentication.Services;
 using Flurl;
 using Microsoft.AspNetCore.Mvc;

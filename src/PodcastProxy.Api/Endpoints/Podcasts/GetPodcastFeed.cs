@@ -1,18 +1,22 @@
+using System.Net;
 using System.Xml;
-using System.Xml.Linq;
+using Ardalis.Result;
 using FastEndpoints;
 using Flurl;
-using MediatR;
-using PodcastProxy.Application.Queries.GetPodcastFeed;
+using Microsoft.Extensions.Configuration;
+using PodcastProxy.Api.Extensions;
+using PodcastProxy.Application.Commands.Podcasts;
+using PodcastProxy.Application.Queries.Podcasts;
+using PodcastProxy.Application.Queries.Shows;
 
 namespace PodcastProxy.Api.Endpoints.Podcasts;
 
 public class GetPodcastFeedRequest
 {
-    public string PodcastId { get; set; } = string.Empty;
+    public required string PodcastId { get; set; }
 }
 
-public class GetPodcastFeedEndpoint(IMediator mediator) : Endpoint<GetPodcastFeedRequest>
+public class GetPodcastFeedEndpoint(IConfiguration configuration) : Endpoint<GetPodcastFeedRequest>
 {
     public override void Configure()
     {
@@ -25,31 +29,69 @@ public class GetPodcastFeedEndpoint(IMediator mediator) : Endpoint<GetPodcastFee
 
     public override async Task HandleAsync(GetPodcastFeedRequest req, CancellationToken ct)
     {
-        var document = await GetPodcastFeed(req, ct);
-        var stream = new MemoryStream();
-        var settings = new XmlWriterSettings { Async = true };
-        var writer = XmlWriter.Create(stream, settings);
+        var podcast = await new GetPodcastByIdQuery { PodcastId = req.PodcastId }.ExecuteAsync(ct);
 
-        await document.WriteToAsync(writer, ct);
+        if (!podcast.IsSuccess)
+        {
+            var shows = await new GetShowsQuery().ExecuteAsync(ct);
 
-        writer.Close();
-        stream.Seek(0, SeekOrigin.Begin);
+            if (!shows.IsSuccess)
+            {
+                await this.SendResult(shows.Map(), ct);
+                return;
+            }
 
-        await SendStreamAsync(stream, contentType: "application/xml", cancellation: ct);
-    }
+            var show = shows.Value.FirstOrDefault(s => string.Equals(s.Show.Id, req.PodcastId, StringComparison.Ordinal));
 
-    private async Task<XDocument> GetPodcastFeed(GetPodcastFeedRequest request, CancellationToken cancellationToken)
-    {
+            if (show is null)
+            {
+                await Send.NotFoundAsync(ct);
+                return;
+            }
+
+            podcast = await new EnsurePodcastExistsCommand { PodcastSlug = show.Show.Slug }.ExecuteAsync(ct);
+
+            if (!podcast.IsSuccess)
+            {
+                await this.SendResult(shows.Map(), ct);
+                return;
+            }
+        }
+
         var feedUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}"
             .AppendPathSegment(HttpContext.Request.PathBase)
             .AppendPathSegment(HttpContext.Request.Path);
 
-        var query = new GetPodcastFeedQuery
-        {
-            PodcastId = request.PodcastId,
-            FeedUrl = HttpContext.Request.Query.Aggregate(feedUrl, (url, pair) => url.SetQueryParam(pair.Key, pair.Value))
-        };
+        const string streamUrlSlug = "{Slug}";
 
-        return await mediator.Send(query, cancellationToken);
+        var streamUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}"
+            .AppendPathSegment(HttpContext.Request.PathBase)
+            .AppendPathSegments("daily-wire", "podcasts", "episodes", streamUrlSlug, "streams", "audio")
+            .SetQueryParam("auth", configuration["Authentication:AccessKey"]);
+
+        var document = await new GetPodcastFeedQuery
+        {
+            PodcastSlug = podcast.Value.Slug,
+            FeedUrl = HttpContext.Request.Query.Aggregate(feedUrl, (url, pair) => url.SetQueryParam(pair.Key, pair.Value)),
+            StreamUrl = streamUrl,
+            StreamUrlSlug = WebUtility.UrlEncode(streamUrlSlug)
+        }.ExecuteAsync(ct);
+
+        if (!document.IsSuccess)
+        {
+            await this.SendResult(document, ct);
+            return;
+        }
+
+        var stream = new MemoryStream();
+        var settings = new XmlWriterSettings { Async = true };
+        var writer = XmlWriter.Create(stream, settings);
+
+        await document.Value.WriteToAsync(writer, ct);
+
+        writer.Close();
+        stream.Seek(0, SeekOrigin.Begin);
+
+        await Send.StreamAsync(stream, contentType: "application/xml", cancellation: ct);
     }
 }

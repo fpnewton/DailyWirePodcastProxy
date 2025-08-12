@@ -30,6 +30,25 @@ public class Season : IEntity
             return HashCode.Combine(obj.SeasonId, obj.PodcastId);
         }
     }
+    
+    private sealed class SeasonSlugPodcastSlugEqualityComparer : IEqualityComparer<Season>
+    {
+        public bool Equals(Season? x, Season? y)
+        {
+            if (ReferenceEquals(x, y)) return true;
+            if (ReferenceEquals(x, null)) return false;
+            if (ReferenceEquals(y, null)) return false;
+            if (x.GetType() != y.GetType()) return false;
 
-    public static IEqualityComparer<Season> DefaultComparer { get; } = new SeasonIdPodcastIdEqualityComparer();
+            return string.Equals(x.Slug, y.Slug, StringComparison.OrdinalIgnoreCase) &&
+                   string.Equals(x.PodcastId, y.PodcastId, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public int GetHashCode(Season obj)
+        {
+            return HashCode.Combine(obj.SeasonId, obj.PodcastId);
+        }
+    }
+
+    public static IEqualityComparer<Season> DefaultComparer { get; } = new SeasonSlugPodcastSlugEqualityComparer();
 }
