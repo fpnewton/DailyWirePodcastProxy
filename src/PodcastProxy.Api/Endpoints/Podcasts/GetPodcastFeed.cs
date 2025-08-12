@@ -13,7 +13,7 @@ namespace PodcastProxy.Api.Endpoints.Podcasts;
 
 public class GetPodcastFeedRequest
 {
-    public string PodcastId { get; set; } = string.Empty;
+    public required string PodcastId { get; set; }
 }
 
 public class GetPodcastFeedEndpoint(IConfiguration configuration) : Endpoint<GetPodcastFeedRequest>

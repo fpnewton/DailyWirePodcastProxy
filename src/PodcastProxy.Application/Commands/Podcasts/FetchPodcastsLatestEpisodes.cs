@@ -11,7 +11,6 @@ namespace PodcastProxy.Application.Commands.Podcasts;
 public class FetchPodcastsLatestEpisodesCommand : ICommand<Result<List<Episode>>>
 {
     public required string SeasonId { get; set; }
-    public int First { get; set; } = 10;
 }
 
 public class FetchPodcastsLatestEpisodesCommandHandler(
@@ -29,26 +28,21 @@ public class FetchPodcastsLatestEpisodesCommandHandler(
 
         if (!podcast.IsSuccess)
             return podcast.Map();
-
-        var newEpisodes = await new GetShowSeasonEpisodesBySeasonIdQuery
-        {
-            ShowSlug = podcast.Value.Slug,
-            SeasonId = season.Value.SeasonId,
-            PageSize = command.First
-        }.ExecuteAsync(ct);
+        
+        var newEpisodes = await new GetLatestShowEpisodesQuery { ShowSlug = podcast.Value.Slug }.ExecuteAsync(ct);
 
         if (!newEpisodes.IsSuccess)
             return newEpisodes.Map();
-
+        
         var episodes = new List<Episode>();
-
-        foreach (var showEpisode in newEpisodes.Value.Episodes)
+        
+        foreach (var showEpisode in newEpisodes.Value)
         {
             if (showEpisode.Status != DwStatus.Published)
                 continue;
-
+        
             var episode = await new GetPodcastEpisodeByIdQuery { EpisodeId = showEpisode.Id }.ExecuteAsync(ct);
-
+        
             if (episode.IsSuccess)
             {
                 episodes.Add(episode.Value);
@@ -67,7 +61,7 @@ public class FetchPodcastsLatestEpisodesCommandHandler(
                     PublishDate = showEpisode.PublishedAt,
                     ScheduleAt = showEpisode.ScheduledAt
                 };
-
+        
                 await repository.AddAsync(ep, ct);
             }
         }
