@@ -85,7 +85,7 @@ public class GetPodcastFeedQueryHandler : ICommandHandler<GetPodcastFeedQuery, R
         if (!seasonsResult.IsSuccess)
             return seasonsResult.Map();
 
-        var seasons = seasonsResult.Value.OrderByDescending(s => s.Slug).ToList();
+        var seasons = seasonsResult.Value.OrderByDescending(s => s.Name ?? s.Slug).ToList();
 
         foreach (var season in seasons)
         {
