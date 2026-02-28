@@ -1,0 +1,84 @@
+name: Build Release Artifacts
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-release-artifacts:
+    runs-on: ubuntu-latest
+
+    env:
+      SOLUTION_FILE: ./DailyWirePodcastProxy.sln
+      WEB_CSPROJ: ./src/PodcastProxy.Web/PodcastProxy.Web.csproj
+      OUTPUT_DIR: ./publish
+      CONFIGURATION: Release
+      TARGETS: "linux-x64 osx-arm64 osx-x64 win-x64"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore "${SOLUTION_FILE}"
+
+      - name: Build solution
+        run: dotnet build "${SOLUTION_FILE}" -c "${CONFIGURATION}" --no-restore
+
+      - name: Clean previous publish outputs
+        run: |
+          mkdir -p "${OUTPUT_DIR}"
+          for target in ${TARGETS}; do
+            rm -rf "${OUTPUT_DIR}/${target}"
+            rm -f "${OUTPUT_DIR}/${target}.zip"
+          done
+
+      - name: Publish runtime targets
+        run: |
+          for target in ${TARGETS}; do
+            echo "Publishing for ${target}..."
+            dotnet publish \
+              "${WEB_CSPROJ}" \
+              -c "${CONFIGURATION}" \
+              -r "${target}" \
+              --self-contained true \
+              -p:PublishSingleFile=true \
+              -p:IncludeNativeLibrariesForSelfExtract=true \
+              --output "${OUTPUT_DIR}/${target}" \
+              --force \
+              --no-restore
+          done
+
+      - name: Create zip archives
+        run: |
+          for target in ${TARGETS}; do
+            if [ -d "${OUTPUT_DIR}/${target}" ] && [ "$(ls -A "${OUTPUT_DIR}/${target}")" ]; then
+              (
+                cd "${OUTPUT_DIR}/${target}"
+                zip -r "../${target}.zip" ./*
+              )
+            fi
+          done
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: publish/*.zip
+          if-no-files-found: error
+
+      - name: Upload release assets
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: publish/*.zip
+          fail_on_unmatched_files: true
