@@ -45,7 +45,7 @@ public class DwEpisodeDetails
     public double Duration { get; set; }
 
     [JsonPropertyName("progress")]
-    public long Progress { get; set; }
+    public double Progress { get; set; }
 
     [JsonPropertyName("status")]
     public DwStatus Status { get; set; }
