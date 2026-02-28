@@ -69,11 +69,32 @@ jobs:
             fi
           done
 
-      - name: Upload workflow artifacts
+      - name: Upload linux-x64 artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-artifacts
-          path: publish/*.zip
+          name: linux-x64
+          path: publish/linux-x64/
+          if-no-files-found: error
+
+      - name: Upload osx-arm64 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: osx-arm64
+          path: publish/osx-arm64/
+          if-no-files-found: error
+
+      - name: Upload osx-x64 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: osx-x64
+          path: publish/osx-x64/
+          if-no-files-found: error
+
+      - name: Upload win-x64 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: win-x64
+          path: publish/win-x64/
           if-no-files-found: error
 
       - name: Upload release assets
