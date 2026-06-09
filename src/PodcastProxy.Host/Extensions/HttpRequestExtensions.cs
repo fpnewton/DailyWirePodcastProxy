@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using System.Text;
 
 namespace PodcastProxy.Host.Extensions;
 
@@ -8,27 +9,38 @@ public static class HttpRequestExtensions
 
     public static string ToRequestLogLine(this HttpRequest request)
     {
-        var query = request.Query.Aggregate(string.Empty, (str, pair) =>
+        var query = new StringBuilder();
+
+        foreach (var pair in request.Query)
         {
-            var separator = string.IsNullOrEmpty(str) ? '?' : '&';
+            query.Append(query.Length == 0 ? '?' : '&');
+            query.Append(SanitizeForLog(pair.Key));
+            query.Append('=');
 
             var value = string.Equals(pair.Key, "auth", StringComparison.OrdinalIgnoreCase)
                 ? RedactedValue
                 : pair.Value.ToString();
 
-            var sanitizedValue = value
-                .Replace(Environment.NewLine, "")
-                .Replace("\n", "")
-                .Replace("\r", "")
-                .Replace("<", "&lt;")
-                .Replace(">", "&gt;")
-                .Replace("&", "&amp;")
-                .Replace("\"", "&quot;")
-                .Replace("'", "&#39;");
-            
-            return str + $"{separator}{pair.Key}={sanitizedValue}";
-        });
+            query.Append(SanitizeForLog(value));
+        }
 
-        return $"{request.Method} {request.Scheme}://{request.Host}{request.Path}{query} {request.Protocol}";
+        return $"{SanitizeForLog(request.Method)} " +
+               $"{SanitizeForLog(request.Scheme)}://" +
+               $"{SanitizeForLog(request.Host.Value)}" +
+               $"{SanitizeForLog(request.Path.Value)}" +
+               $"{query} " +
+               $"{SanitizeForLog(request.Protocol)}";
+    }
+
+    private static string SanitizeForLog(string? value)
+    {
+        return (value ?? string.Empty)
+            .Replace("\r", string.Empty)
+            .Replace("\n", string.Empty)
+            .Replace("&", "&amp;")
+            .Replace("<", "&lt;")
+            .Replace(">", "&gt;")
+            .Replace("\"", "&quot;")
+            .Replace("'", "&#39;");
     }
 }
