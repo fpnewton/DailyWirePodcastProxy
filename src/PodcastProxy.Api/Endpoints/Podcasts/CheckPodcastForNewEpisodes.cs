@@ -32,6 +32,6 @@ public class CheckPodcastForNewEpisodesEndpoint : Endpoint<CheckPodcastForNewEpi
 
         await new CheckPodcastForNewEpisodesCommand { PodcastSlug = podcast.Value.Slug }.ExecuteAsync(ct);
 
-        await Send.OkAsync(ct);
+        await Send.OkAsync(cancellation: ct);
     }
 }

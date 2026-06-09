@@ -12,10 +12,6 @@ public class ListPodcastsEndpoint(IConfiguration configuration) : EndpointWithou
 {
     public override void Configure()
     {
-#if DEBUG
-        AllowAnonymous();
-#endif
-
         Get("/podcasts");
         Description(d => d.Produces<IList<PodcastResponse>>());
     }

@@ -20,10 +20,6 @@ public class GetPodcastFeedEndpoint(IConfiguration configuration) : Endpoint<Get
 {
     public override void Configure()
     {
-#if DEBUG
-        AllowAnonymous();
-#endif
-
         Get("podcasts/{PodcastId}/feed");
     }
 

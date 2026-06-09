@@ -1,5 +1,6 @@
 using Ardalis.Result;
 using DailyWire.Api.Middleware.Enums;
+using DailyWire.Api.Middleware.Models;
 using FastEndpoints;
 using PodcastProxy.Application.Queries.Podcasts;
 using PodcastProxy.Application.Queries.Shows;
@@ -41,31 +42,40 @@ public class FetchPodcastsLatestEpisodesCommandHandler(
             if (showEpisode.Status != DwStatus.Published)
                 continue;
         
-            var episode = await new GetPodcastEpisodeByIdQuery { EpisodeId = showEpisode.Id }.ExecuteAsync(ct);
+            var episodeResult = await new GetPodcastEpisodeByIdQuery { EpisodeId = showEpisode.Id }.ExecuteAsync(ct);
         
-            if (episode.IsSuccess)
+            if (episodeResult.IsSuccess)
             {
-                episodes.Add(episode.Value);
+                var episode = episodeResult.Value;
+
+                MapShowEpisode(episode, showEpisode, season.Value.SeasonId);
+
+                await repository.UpdateAsync(episode, ct);
+                episodes.Add(episode);
             }
-            else if (episode.Status == ResultStatus.NotFound)
+            else if (episodeResult.Status == ResultStatus.NotFound)
             {
-                var ep = new Episode
-                {
-                    SeasonId = season.Value.SeasonId,
-                    EpisodeId = showEpisode.Id,
-                    Slug = showEpisode.Slug,
-                    Title = showEpisode.Title,
-                    Description = showEpisode.Description,
-                    Thumbnail = new Uri(showEpisode.Images.Thumbnail.Landscape),
-                    Duration = showEpisode.Duration,
-                    PublishDate = showEpisode.PublishedAt,
-                    ScheduleAt = showEpisode.ScheduledAt
-                };
+                var episode = new Episode { EpisodeId = showEpisode.Id };
+
+                MapShowEpisode(episode, showEpisode, season.Value.SeasonId);
         
-                await repository.AddAsync(ep, ct);
+                await repository.AddAsync(episode, ct);
+                episodes.Add(episode);
             }
         }
 
         return Result.Success(episodes);
+    }
+
+    private static void MapShowEpisode(Episode episode, DwShowEpisode showEpisode, string seasonId)
+    {
+        episode.SeasonId = seasonId;
+        episode.Slug = showEpisode.Slug;
+        episode.Title = showEpisode.Title;
+        episode.Description = showEpisode.Description;
+        episode.Thumbnail = new Uri(showEpisode.Images.Thumbnail.Landscape);
+        episode.Duration = showEpisode.Duration;
+        episode.PublishDate = showEpisode.PublishedAt;
+        episode.ScheduleAt = showEpisode.ScheduledAt;
     }
 }

@@ -19,9 +19,11 @@ public interface ITokenService
     public Task<bool> RefreshToken(CancellationToken cancellationToken);
 }
 
-public class TokenService(ILogger<TokenService> logger, ITokenStore tokenStore, RefreshTokenHandler refreshTokenHandler)
+public class TokenService(ILogger<TokenService> logger, ITokenStore tokenStore, IRefreshTokenHandler refreshTokenHandler)
     : ITokenService
 {
+    private readonly SemaphoreSlim _refreshLock = new(1, 1);
+
     public async Task<bool> HasValidAccessToken(CancellationToken cancellationToken)
     {
         var tokens = await tokenStore.GetAuthenticationTokensAsync(cancellationToken);
@@ -50,14 +52,9 @@ public class TokenService(ILogger<TokenService> logger, ITokenStore tokenStore, 
             return tokens.AccessToken;
         }
         
-        logger.LogInformation("Refreshing tokens");
-        
-        tokens = await refreshTokenHandler.RefreshTokensAsync(tokens.RefreshToken, cancellationToken) ??
-                 throw new AuthenticationException("Failed to refresh token");
-        
-        logger.LogDebug("Validating access token");
-        
-        if (ValidateAccessToken(tokens) && !string.IsNullOrEmpty(tokens.AccessToken))
+        tokens = await TryRefreshToken(tokens, cancellationToken);
+
+        if (tokens is not null && !string.IsNullOrEmpty(tokens.AccessToken))
         {
             return tokens.AccessToken;
         }
@@ -70,20 +67,101 @@ public class TokenService(ILogger<TokenService> logger, ITokenStore tokenStore, 
     public async Task<bool> RefreshToken(CancellationToken cancellationToken)
     {
         var tokens = await tokenStore.GetAuthenticationTokensAsync(cancellationToken);
-        
-        if (tokens is not null)
-        {
-            tokens = await refreshTokenHandler.RefreshTokensAsync(tokens.RefreshToken, cancellationToken);
-        }
-        
-        if (tokens is not null && ValidateAccessToken(tokens))
-        {
-            await tokenStore.StoreAuthenticationTokensAsync(tokens, cancellationToken);
 
-            return true;
+        if (tokens is null)
+        {
+            logger.LogWarning("Token refresh skipped because no tokens were found in the token store");
+            return false;
         }
-        
-        return false;
+
+        return await TryRefreshToken(tokens, cancellationToken) is not null;
+    }
+
+    private async Task<AuthenticationTokens?> TryRefreshToken(
+        AuthenticationTokens currentTokens,
+        CancellationToken cancellationToken)
+    {
+        await _refreshLock.WaitAsync(cancellationToken);
+
+        try
+        {
+            var latestTokens = await tokenStore.GetAuthenticationTokensAsync(cancellationToken);
+
+            if (latestTokens is null)
+            {
+                logger.LogWarning("Token refresh skipped because no tokens were found in the token store");
+                return null;
+            }
+
+            if (!string.Equals(
+                    latestTokens.RefreshToken,
+                    currentTokens.RefreshToken,
+                    StringComparison.Ordinal)
+                && ValidateAccessToken(latestTokens))
+            {
+                return latestTokens;
+            }
+
+            if (string.IsNullOrWhiteSpace(latestTokens.RefreshToken))
+            {
+                logger.LogWarning("Token refresh skipped because the stored tokens do not include a refresh token");
+                return null;
+            }
+
+            logger.LogInformation("Attempting to refresh DailyWire authentication tokens");
+
+            var refreshedTokens = await refreshTokenHandler.RefreshTokensAsync(
+                latestTokens.RefreshToken,
+                cancellationToken);
+
+            if (refreshedTokens is null)
+            {
+                logger.LogWarning("DailyWire token refresh returned no tokens");
+                return null;
+            }
+
+            // Auth0 does not always return a new refresh token when rotation is disabled.
+            refreshedTokens.RefreshToken ??= latestTokens.RefreshToken;
+
+            if (!ValidateAccessToken(refreshedTokens))
+            {
+                logger.LogWarning("DailyWire token refresh returned an invalid access token");
+                return null;
+            }
+
+            var stored = await tokenStore.TryStoreAuthenticationTokensAsync(
+                refreshedTokens,
+                latestTokens.RefreshToken,
+                cancellationToken);
+
+            if (!stored)
+            {
+                logger.LogInformation(
+                    "Discarding refreshed DailyWire tokens because newer authentication tokens were stored");
+
+                var newerTokens = await tokenStore.GetAuthenticationTokensAsync(cancellationToken);
+                return newerTokens is not null && ValidateAccessToken(newerTokens)
+                    ? newerTokens
+                    : null;
+            }
+
+            logger.LogInformation("DailyWire authentication tokens refreshed successfully");
+
+            return refreshedTokens;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "DailyWire token refresh failed");
+            return null;
+        }
+        finally
+        {
+            _refreshLock.Release();
+        }
     }
 
     private static bool ValidateAccessToken(AuthenticationTokens tokens)

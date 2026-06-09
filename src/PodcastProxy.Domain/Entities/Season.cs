@@ -46,7 +46,10 @@ public class Season : IEntity
 
         public int GetHashCode(Season obj)
         {
-            return HashCode.Combine(obj.SeasonId, obj.PodcastId);
+            var hashCode = new HashCode();
+            hashCode.Add(obj.Slug, StringComparer.OrdinalIgnoreCase);
+            hashCode.Add(obj.PodcastId, StringComparer.OrdinalIgnoreCase);
+            return hashCode.ToHashCode();
         }
     }
 

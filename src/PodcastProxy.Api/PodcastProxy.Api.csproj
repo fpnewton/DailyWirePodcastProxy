@@ -1,18 +1,33 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="Ardalis.Result" Version="10.1.0" />
-      <PackageReference Include="FastEndpoints" Version="8.0.1" />
-      <PackageReference Include="FastEndpoints.Swagger" Version="8.0.1" />
+      <PackageReference Include="FastEndpoints" Version="8.1.0" />
+      <PackageReference Include="FastEndpoints.Attributes" Version="8.1.0" />
+      <PackageReference Include="FastEndpoints.Core" Version="8.1.0" />
+      <PackageReference Include="FastEndpoints.JobQueues" Version="8.1.0" />
+      <PackageReference Include="FastEndpoints.Messaging" Version="8.1.0" />
+      <PackageReference Include="FastEndpoints.Messaging.Core" Version="8.1.0" />
+      <PackageReference Include="FastEndpoints.Swagger" Version="8.1.0" />
       <PackageReference Include="FluentValidation" Version="12.1.1" />
+      <PackageReference Include="Flurl" Version="4.0.0" />
       <PackageReference Include="Flurl.Http" Version="4.0.2" />
-      <PackageReference Include="QRCoder" Version="1.6.0" />
+      <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.10" />
+      <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.17" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.8" />
+      <PackageReference Include="Microsoft.Extensions.Diagnostics.Abstractions" Version="10.0.8" />
+      <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="10.0.8" />
+      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.8" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.8" />
+      <PackageReference Include="QRCoder" Version="1.8.0" />
+      <PackageReference Include="System.Drawing.Common" Version="10.0.8" />
+      <PackageReference Include="YamlDotNet" Version="18.0.0" />
     </ItemGroup>
 
     <ItemGroup>

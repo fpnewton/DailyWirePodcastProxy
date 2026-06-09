@@ -1,17 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="Ardalis.Result" Version="10.1.0" />
-      <PackageReference Include="Auth0.AuthenticationApi" Version="7.45.0" />
+      <PackageReference Include="Auth0.AuthenticationApi" Version="7.46.0" />
+      <PackageReference Include="Auth0.Core" Version="7.46.0" />
       <PackageReference Include="JWT" Version="11.0.0" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.2" />
-      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.8" />
+      <PackageReference Include="Microsoft.Bcl.Cryptography" Version="10.0.8" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.8" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.8" />
+      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.19.1" />
     </ItemGroup>
 
 </Project>

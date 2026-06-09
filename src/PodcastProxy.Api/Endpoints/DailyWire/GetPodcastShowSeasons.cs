@@ -16,10 +16,6 @@ public class GetPodcastShowSeasonsEndpoint : Endpoint<GetPodcastShowSeasonsReque
 {
     public override void Configure()
     {
-#if DEBUG
-        AllowAnonymous();
-#endif
-
         Get("daily-wire/podcasts/{PodcastSlug}/seasons");
     }
 
