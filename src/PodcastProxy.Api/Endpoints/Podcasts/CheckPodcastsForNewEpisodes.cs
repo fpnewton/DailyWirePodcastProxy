@@ -16,6 +16,6 @@ public class CheckPodcastsForNewEpisodes : EndpointWithoutRequest
     {
         await new CheckAllPodcastsForNewEpisodesCommand().ExecuteAsync(ct);
 
-        await Send.OkAsync(ct);
+        await Send.OkAsync(cancellation: ct);
     }
 }

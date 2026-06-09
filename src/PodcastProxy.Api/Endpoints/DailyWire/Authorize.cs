@@ -28,6 +28,6 @@ public class AuthorizeEndpoint(ITokenStore tokenStore, DeviceCodeLoginHandler ha
 
         await tokenStore.StoreAuthenticationTokensAsync(result.Value, ct);
         
-        await Send.OkAsync(ct);
+        await Send.OkAsync(cancellation: ct);
     }
 }
