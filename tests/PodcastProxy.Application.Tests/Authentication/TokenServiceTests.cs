@@ -19,8 +19,13 @@ public class TokenServiceTests
         var refreshHandler = Substitute.For<IRefreshTokenHandler>();
         tokenStore.GetAuthenticationTokensAsync(Arg.Any<CancellationToken>())
             .Returns(currentTokens);
-        refreshHandler.RefreshTokensAsync(currentTokens.RefreshToken, Arg.Any<CancellationToken>())
+        refreshHandler.RefreshTokensAsync(currentTokens.RefreshToken!, Arg.Any<CancellationToken>())
             .Returns(refreshedTokens);
+        tokenStore.TryStoreAuthenticationTokensAsync(
+                refreshedTokens,
+                currentTokens.RefreshToken!,
+                Arg.Any<CancellationToken>())
+            .Returns(true);
         var service = new TokenService(
             Substitute.For<ILogger<TokenService>>(),
             tokenStore,
@@ -31,7 +36,10 @@ public class TokenServiceTests
         Assert.True(result);
         Assert.Equal(currentTokens.RefreshToken, refreshedTokens.RefreshToken);
         await tokenStore.Received(1)
-            .StoreAuthenticationTokensAsync(refreshedTokens, Arg.Any<CancellationToken>());
+            .TryStoreAuthenticationTokensAsync(
+                refreshedTokens,
+                currentTokens.RefreshToken!,
+                Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -43,8 +51,13 @@ public class TokenServiceTests
         var refreshHandler = Substitute.For<IRefreshTokenHandler>();
         tokenStore.GetAuthenticationTokensAsync(Arg.Any<CancellationToken>())
             .Returns(currentTokens);
-        refreshHandler.RefreshTokensAsync(currentTokens.RefreshToken, Arg.Any<CancellationToken>())
+        refreshHandler.RefreshTokensAsync(currentTokens.RefreshToken!, Arg.Any<CancellationToken>())
             .Returns(refreshedTokens);
+        tokenStore.TryStoreAuthenticationTokensAsync(
+                refreshedTokens,
+                currentTokens.RefreshToken!,
+                Arg.Any<CancellationToken>())
+            .Returns(true);
         var service = new TokenService(
             Substitute.For<ILogger<TokenService>>(),
             tokenStore,
@@ -54,7 +67,10 @@ public class TokenServiceTests
 
         Assert.Equal(refreshedTokens.AccessToken, accessToken);
         await tokenStore.Received(1)
-            .StoreAuthenticationTokensAsync(refreshedTokens, Arg.Any<CancellationToken>());
+            .TryStoreAuthenticationTokensAsync(
+                refreshedTokens,
+                currentTokens.RefreshToken!,
+                Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -77,6 +93,27 @@ public class TokenServiceTests
             .RefreshTokensAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task RefreshToken_ConcurrentCallsOnlyRotateCurrentRefreshTokenOnce()
+    {
+        var currentTokens = CreateTokens(DateTime.UtcNow.AddMinutes(-5), "refresh-token");
+        var refreshedTokens = CreateTokens(DateTime.UtcNow.AddDays(30), "rotated-refresh-token");
+        var tokenStore = new InMemoryTokenStore(currentTokens);
+        var refreshHandler = new DelayedRefreshTokenHandler(refreshedTokens);
+        var service = new TokenService(
+            Substitute.For<ILogger<TokenService>>(),
+            tokenStore,
+            refreshHandler);
+
+        var results = await Task.WhenAll(
+            service.RefreshToken(CancellationToken.None),
+            service.RefreshToken(CancellationToken.None));
+
+        Assert.All(results, Assert.True);
+        Assert.Equal(1, refreshHandler.CallCount);
+        Assert.Same(refreshedTokens, await tokenStore.GetAuthenticationTokensAsync(CancellationToken.None));
+    }
+
     private static AuthenticationTokens CreateTokens(DateTime expires, string? refreshToken)
     {
         var accessToken = new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(expires: expires));
@@ -88,5 +125,85 @@ public class TokenServiceTests
             ExpiresIn = 60 * 60,
             RefreshToken = refreshToken
         };
+    }
+
+    private sealed class InMemoryTokenStore(AuthenticationTokens? tokens) : ITokenStore
+    {
+        private readonly SemaphoreSlim _lock = new(1, 1);
+        private AuthenticationTokens? _tokens = tokens;
+
+        public async Task<AuthenticationTokens?> GetAuthenticationTokensAsync(
+            CancellationToken cancellationToken)
+        {
+            await _lock.WaitAsync(cancellationToken);
+
+            try
+            {
+                return _tokens;
+            }
+            finally
+            {
+                _lock.Release();
+            }
+        }
+
+        public async Task StoreAuthenticationTokensAsync(
+            AuthenticationTokens token,
+            CancellationToken cancellationToken)
+        {
+            await _lock.WaitAsync(cancellationToken);
+
+            try
+            {
+                _tokens = token;
+            }
+            finally
+            {
+                _lock.Release();
+            }
+        }
+
+        public async Task<bool> TryStoreAuthenticationTokensAsync(
+            AuthenticationTokens token,
+            string expectedRefreshToken,
+            CancellationToken cancellationToken)
+        {
+            await _lock.WaitAsync(cancellationToken);
+
+            try
+            {
+                if (!string.Equals(
+                        _tokens?.RefreshToken,
+                        expectedRefreshToken,
+                        StringComparison.Ordinal))
+                {
+                    return false;
+                }
+
+                _tokens = token;
+                return true;
+            }
+            finally
+            {
+                _lock.Release();
+            }
+        }
+    }
+
+    private sealed class DelayedRefreshTokenHandler(AuthenticationTokens refreshedTokens)
+        : IRefreshTokenHandler
+    {
+        private int _callCount;
+
+        public int CallCount => _callCount;
+
+        public async Task<AuthenticationTokens?> RefreshTokensAsync(
+            string? refreshToken,
+            CancellationToken cancellationToken)
+        {
+            Interlocked.Increment(ref _callCount);
+            await Task.Delay(50, cancellationToken);
+            return refreshedTokens;
+        }
     }
 }

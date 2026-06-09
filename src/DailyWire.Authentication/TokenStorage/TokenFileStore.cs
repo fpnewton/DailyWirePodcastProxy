@@ -1,4 +1,3 @@
-using System.Text;
 using System.Text.Json;
 using DailyWire.Authentication.Models;
 
@@ -6,37 +5,125 @@ namespace DailyWire.Authentication.TokenStorage;
 
 public class TokenFileStore(string filePath) : ITokenStore
 {
+    private readonly SemaphoreSlim _fileLock = new(1, 1);
+
     public async Task<AuthenticationTokens?> GetAuthenticationTokensAsync(CancellationToken cancellationToken)
+    {
+        await _fileLock.WaitAsync(cancellationToken);
+
+        try
+        {
+            return await ReadTokensAsync(cancellationToken);
+        }
+        finally
+        {
+            _fileLock.Release();
+        }
+    }
+
+    public async Task StoreAuthenticationTokensAsync(
+        AuthenticationTokens tokens,
+        CancellationToken cancellationToken)
+    {
+        await _fileLock.WaitAsync(cancellationToken);
+
+        try
+        {
+            await WriteTokensAsync(tokens, cancellationToken);
+        }
+        finally
+        {
+            _fileLock.Release();
+        }
+    }
+
+    public async Task<bool> TryStoreAuthenticationTokensAsync(
+        AuthenticationTokens tokens,
+        string expectedRefreshToken,
+        CancellationToken cancellationToken)
+    {
+        await _fileLock.WaitAsync(cancellationToken);
+
+        try
+        {
+            var currentTokens = await ReadTokensAsync(cancellationToken);
+
+            if (!string.Equals(
+                    currentTokens?.RefreshToken,
+                    expectedRefreshToken,
+                    StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            await WriteTokensAsync(tokens, cancellationToken);
+            return true;
+        }
+        finally
+        {
+            _fileLock.Release();
+        }
+    }
+
+    private static async Task<AuthenticationTokens?> DeserializeTokensAsync(
+        Stream stream,
+        CancellationToken cancellationToken)
+    {
+        if (stream.Length == 0)
+        {
+            return null;
+        }
+
+        return await JsonSerializer.DeserializeAsync<AuthenticationTokens>(
+            stream,
+            cancellationToken: cancellationToken);
+    }
+
+    private async Task<AuthenticationTokens?> ReadTokensAsync(CancellationToken cancellationToken)
     {
         if (!File.Exists(filePath))
         {
             return null;
         }
 
-        var json = await File.ReadAllTextAsync(filePath, Encoding.UTF8, cancellationToken);
+        await using var stream = new FileStream(
+            filePath,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            bufferSize: 4096,
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
 
-        if (string.IsNullOrEmpty(json))
-        {
-            return null;
-        }
-
-        return JsonSerializer.Deserialize<AuthenticationTokens>(json);
+        return await DeserializeTokensAsync(stream, cancellationToken);
     }
 
-    public async Task StoreAuthenticationTokensAsync(AuthenticationTokens? tokens, CancellationToken cancellationToken)
+    private async Task WriteTokensAsync(
+        AuthenticationTokens tokens,
+        CancellationToken cancellationToken)
     {
-        if (tokens is null)
+        var fullPath = Path.GetFullPath(filePath);
+        var directory = Path.GetDirectoryName(fullPath)!;
+        var temporaryPath = Path.Combine(directory, $".{Path.GetFileName(fullPath)}.{Guid.NewGuid():N}.tmp");
+
+        try
         {
-            if (File.Exists(filePath))
+            await using (var stream = new FileStream(
+                             temporaryPath,
+                             FileMode.CreateNew,
+                             FileAccess.Write,
+                             FileShare.None,
+                             bufferSize: 4096,
+                             FileOptions.Asynchronous | FileOptions.WriteThrough))
             {
-                File.Delete(filePath);
+                await JsonSerializer.SerializeAsync(stream, tokens, cancellationToken: cancellationToken);
+                await stream.FlushAsync(cancellationToken);
             }
-            
-            return;
+
+            File.Move(temporaryPath, fullPath, overwrite: true);
         }
-
-        var json = JsonSerializer.Serialize(tokens);
-
-        await File.WriteAllTextAsync(filePath, json, Encoding.UTF8, cancellationToken);
+        finally
+        {
+            File.Delete(temporaryPath);
+        }
     }
 }
