@@ -214,6 +214,10 @@ _pkginfo.txt
 ClientBin/
 ~$*
 *~
+tokens.dat
+podcasts.db
+*.db-wal
+*.db-shm
 *.dbmdl
 *.dbproj.schemaview
 *.jfm
