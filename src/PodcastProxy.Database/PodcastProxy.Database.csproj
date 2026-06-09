@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
      <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
@@ -11,10 +11,36 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Ardalis.Specification.EntityFrameworkCore" Version="9.2.0" />
-      <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.3.0" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.8" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.8" />
+      <PackageReference Include="Ardalis.Specification" Version="9.3.1" />
+      <PackageReference Include="Ardalis.Specification.EntityFrameworkCore" Version="9.3.1" />
+      <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.3.10" />
+      <PackageReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="2.3.10" />
+      <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.10" />
+      <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.3.10" />
+      <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.17" />
+      <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.3.10" />
+      <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="10.0.8" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.8" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="10.0.8" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Analyzers" Version="10.0.8" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.8" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.8" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.8" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="10.0.8" />
+      <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="10.0.8" />
+      <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.8" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.8" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.8" />
+      <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="10.0.8" />
+      <PackageReference Include="Microsoft.Extensions.Diagnostics.Abstractions" Version="10.0.8" />
+      <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="10.0.8" />
+      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.8" />
+      <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.8" />
+      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.8" />
+      <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.3" />
+      <PackageReference Include="SQLitePCLRaw.core" Version="3.0.3" />
+      <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.11" />
+      <PackageReference Include="SQLitePCLRaw.provider.e_sqlite3" Version="3.0.3" />
     </ItemGroup>
 
 </Project>

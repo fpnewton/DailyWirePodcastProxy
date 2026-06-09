@@ -5,6 +5,7 @@ using DailyWire.Authentication.Setup;
 using FastEndpoints;
 using FastEndpoints.Swagger;
 using PodcastProxy.Api;
+using PodcastProxy.Application.Queries.Podcasts;
 using PodcastProxy.Database;
 using PodcastProxy.Host.Configuration;
 using PodcastProxy.Web.Setup;
@@ -17,7 +18,14 @@ var builder = WebApplication.CreateBuilder(args)
     .AddHostedServices();
 
 builder.Services
-    .AddFastEndpoints()
+    .AddFastEndpoints(options =>
+    {
+        options.Assemblies =
+        [
+            typeof(PodcastProxyApiSetup).Assembly,
+            typeof(GetPodcastByIdQuery).Assembly
+        ];
+    })
     .SwaggerDocument()
     .ConfigureDailyWireMiddlewareApi()
     .ConfigureDailyWireStreamingApi()
