@@ -12,7 +12,7 @@
 
     <ItemGroup>
       <PackageReference Include="Flurl" Version="4.0.0" />
-      <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.19" />
+      <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.24" />
       <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="9.0.8" />
       <PackageReference Include="Quartz" Version="3.15.0" />
       <PackageReference Include="Quartz.AspNetCore" Version="3.15.0" />
