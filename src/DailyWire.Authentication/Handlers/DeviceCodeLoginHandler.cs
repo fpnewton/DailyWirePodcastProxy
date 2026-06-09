@@ -2,10 +2,13 @@ using Ardalis.Result;
 using Auth0.AuthenticationApi;
 using Auth0.AuthenticationApi.Models;
 using DailyWire.Authentication.Models;
+using Microsoft.Extensions.Logging;
 
 namespace DailyWire.Authentication.Handlers;
 
-public class DeviceCodeLoginHandler(OAuthConfiguration oauthConfiguration)
+public class DeviceCodeLoginHandler(
+    OAuthConfiguration oauthConfiguration,
+    ILogger<DeviceCodeLoginHandler> logger)
 {
     private readonly AuthenticationApiClient _authenticationClient = new(oauthConfiguration.Issuer);
 
@@ -32,18 +35,13 @@ public class DeviceCodeLoginHandler(OAuthConfiguration oauthConfiguration)
     {
         var request = new DeviceCodeTokenRequest
         {
-            ClientId = "FCgw3nA6cxkcXLVseAQvCSVBrymwvfpE",
+            ClientId = oauthConfiguration.ClientId,
             DeviceCode = deviceCode
         };
 
         try
         {
             var result = await _authenticationClient.GetTokenAsync(request, cancellationToken);
-
-            if (result is null)
-            {
-                return Result<AuthenticationTokens>.Error("Did not receive user tokens.");
-            }
 
             var tokens = new AuthenticationTokens
             {
@@ -53,6 +51,13 @@ public class DeviceCodeLoginHandler(OAuthConfiguration oauthConfiguration)
                 ExpiresIn = result.ExpiresIn,
                 RefreshToken = result.RefreshToken
             };
+
+            if (string.IsNullOrWhiteSpace(tokens.RefreshToken))
+            {
+                logger.LogWarning(
+                    "DailyWire authentication succeeded, but Auth0 did not issue a refresh token. " +
+                    "Automatic renewal will not be possible when the access token expires");
+            }
             
             return Result<AuthenticationTokens>.Success(tokens);
         }

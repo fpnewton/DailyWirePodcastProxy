@@ -15,7 +15,7 @@ public static class DailyWireAuthenticationSetup
         services.TryAddSingleton(ProvideTokenStore);
 
         services.TryAddSingleton<DeviceCodeLoginHandler>();
-        services.TryAddSingleton<RefreshTokenHandler>();
+        services.TryAddSingleton<IRefreshTokenHandler, RefreshTokenHandler>();
 
         return services;
     }

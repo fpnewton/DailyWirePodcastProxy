@@ -4,7 +4,12 @@ using DailyWire.Authentication.Models;
 
 namespace DailyWire.Authentication.Handlers;
 
-public class RefreshTokenHandler(OAuthConfiguration oauthConfiguration)
+public interface IRefreshTokenHandler
+{
+    Task<AuthenticationTokens?> RefreshTokensAsync(string? refreshToken, CancellationToken cancellationToken);
+}
+
+public class RefreshTokenHandler(OAuthConfiguration oauthConfiguration) : IRefreshTokenHandler
 {
     private readonly AuthenticationApiClient _authenticationClient = new(oauthConfiguration.Issuer);
     
