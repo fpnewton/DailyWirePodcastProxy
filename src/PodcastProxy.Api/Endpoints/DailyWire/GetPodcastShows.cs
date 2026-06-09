@@ -14,10 +14,6 @@ public class GetPodcastShowsEndpoint(IConfiguration configuration) : EndpointWit
 {
     public override void Configure()
     {
-#if DEBUG
-        AllowAnonymous();
-#endif
-
         Get("daily-wire/shows");
         Description(e => e.Produces<IList<PodcastShowOverview>>());
     }
