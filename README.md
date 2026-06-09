@@ -59,6 +59,8 @@ When the servie is first started, the service will auto-generate a unique access
 AccessKey = LokYdDAw23dBTEo7t753q1
 ```
 
+The access key is also printed to the console at startup so it can be found easily. Treat startup console output as sensitive and avoid publishing or forwarding it to an untrusted logging service.
+
 This access key is required for all API usage of this service and must be passed in the URL as query parameter `auth` otherwise the service will return a 403 error if it is missing.
 
 

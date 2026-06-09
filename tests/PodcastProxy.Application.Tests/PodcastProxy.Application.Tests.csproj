@@ -36,6 +36,7 @@
     <ItemGroup>
       <ProjectReference Include="..\..\src\DailyWire.Authentication\DailyWire.Authentication.csproj" />
       <ProjectReference Include="..\..\src\PodcastProxy.Application\PodcastProxy.Application.csproj" />
+      <ProjectReference Include="..\..\src\PodcastProxy.Host\PodcastProxy.Host.csproj" />
     </ItemGroup>
 
 </Project>
