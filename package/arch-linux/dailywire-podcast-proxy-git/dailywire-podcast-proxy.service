@@ -1,0 +1,27 @@
+[Unit]
+Description=DailyWire Podcast Proxy
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=dailywire-podcast-proxy
+Group=dailywire-podcast-proxy
+WorkingDirectory=/var/lib/dailywire-podcast-proxy
+ExecStart=/usr/bin/dailywire-podcast-proxy
+Restart=on-failure
+RestartSec=10
+
+# Keep the writable config/state in /var/lib.
+# The package install script should copy the default config here if missing.
+Environment=DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+
+# Basic hardening. Keep this moderate because .NET single-file apps may need temp/extract access.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=full
+ReadWritePaths=/var/lib/dailywire-podcast-proxy
+
+[Install]
+WantedBy=multi-user.target
