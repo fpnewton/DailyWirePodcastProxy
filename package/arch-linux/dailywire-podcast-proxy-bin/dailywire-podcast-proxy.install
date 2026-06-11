@@ -1,0 +1,69 @@
+post_install() {
+  systemd-sysusers dailywire-podcast-proxy.conf
+  systemd-tmpfiles --create dailywire-podcast-proxy.conf
+
+  if [[ ! -f /var/lib/dailywire-podcast-proxy/DailyWirePodcastProxy.ini ]]; then
+    install -Dm640 \
+      -o dailywire-podcast-proxy \
+      -g dailywire-podcast-proxy \
+      /etc/dailywire-podcast-proxy/DailyWirePodcastProxy.ini \
+      /var/lib/dailywire-podcast-proxy/DailyWirePodcastProxy.ini
+  fi
+
+  chown -R dailywire-podcast-proxy:dailywire-podcast-proxy /var/lib/dailywire-podcast-proxy
+
+  cat <<'EOF'
+DailyWire Podcast Proxy installed.
+
+Edit configuration:
+  sudoedit /var/lib/dailywire-podcast-proxy/DailyWirePodcastProxy.ini
+
+Start the service:
+  sudo systemctl enable --now dailywire-podcast-proxy.service
+
+View logs:
+  journalctl -u dailywire-podcast-proxy -f
+EOF
+}
+
+post_upgrade() {
+  systemd-sysusers dailywire-podcast-proxy.conf
+  systemd-tmpfiles --create dailywire-podcast-proxy.conf
+
+  if [[ ! -f /var/lib/dailywire-podcast-proxy/DailyWirePodcastProxy.ini ]]; then
+    install -Dm640 \
+      -o dailywire-podcast-proxy \
+      -g dailywire-podcast-proxy \
+      /etc/dailywire-podcast-proxy/DailyWirePodcastProxy.ini \
+      /var/lib/dailywire-podcast-proxy/DailyWirePodcastProxy.ini
+  fi
+
+  chown -R dailywire-podcast-proxy:dailywire-podcast-proxy /var/lib/dailywire-podcast-proxy
+
+  cat <<'EOF'
+DailyWire Podcast Proxy upgraded.
+
+Review configuration if needed:
+  sudoedit /var/lib/dailywire-podcast-proxy/DailyWirePodcastProxy.ini
+
+Restart the service:
+  sudo systemctl restart dailywire-podcast-proxy.service
+EOF
+}
+
+pre_remove() {
+  systemctl stop dailywire-podcast-proxy.service 2>/dev/null || true
+  systemctl disable dailywire-podcast-proxy.service 2>/dev/null || true
+}
+
+post_remove() {
+  cat <<'EOF'
+DailyWire Podcast Proxy removed.
+
+Persistent data was left in:
+  /var/lib/dailywire-podcast-proxy
+
+Remove it manually if you no longer need it:
+  sudo rm -rf /var/lib/dailywire-podcast-proxy
+EOF
+}
