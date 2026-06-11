@@ -86,6 +86,7 @@ AccessKey =
 
 [DailyWireApi]
 ShowPageSlug = watch-page
+LogRawJsonResponses = false
 
 [Jobs]
 CheckForNewEpisodes = 0 0/15 * * * ?
@@ -129,6 +130,10 @@ Configuration keys:
   and this is blank, startup generates a random key and writes it back to the
   INI file.
 - `DailyWireApi:ShowPageSlug`: DailyWire page slug used to discover shows.
+- `DailyWireApi:LogRawJsonResponses`: Logs successful raw JSON responses from
+  the DailyWire metadata API before deserialization. This is disabled by
+  default because responses can be large and may contain account or content
+  metadata. Enable it temporarily when diagnosing unknown response types.
 - `Jobs:CheckForNewEpisodes`: Quartz cron schedule for metadata updates. The
   sample runs every 15 minutes.
 - `Jobs:CheckAuthentication`: Quartz cron schedule for token validation and
