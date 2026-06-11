@@ -3,7 +3,7 @@
 pkgname=dailywire-podcast-proxy-bin
 _pkgname=DailyWirePodcastProxy
 pkgver=1.3.0
-pkgrel=1
+pkgrel=2
 pkgdesc='Self-hosted proxy that creates private RSS feeds for DailyWire podcast episodes'
 arch=('x86_64')
 url='https://github.com/fpnewton/DailyWirePodcastProxy'
@@ -28,7 +28,7 @@ source=(
 )
 
 sha256sums=('6c8defc17c418d9b563e8587f87b89a28d583ed2c4277298f0bfbabb35fbe9d9'
-            'e5651908e75c1173c7de8fb0a728a22dd561b40c360a8909df14139b3fb8f82b'
+            '851fa33cd36229f2136ea0b8686da4375762fb0428b729fd88a99a1bfc2a409a'
             'fda5e077581908317da776fc8e9d8bc7e5fb60e10f2933b6641217f1f60bf9fb'
             '26c6094ef72f79051f33c2f511d0ee2ae0ee34905e322bcf7a954a986ead95a2')
 
