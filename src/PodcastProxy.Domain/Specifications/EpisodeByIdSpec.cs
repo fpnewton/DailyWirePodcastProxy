@@ -7,7 +7,6 @@ public sealed class EpisodeByIdSpec : Specification<Episode>
 {
     public EpisodeByIdSpec(string episodeId)
     {
-        Query.Where(episode => string.Equals(episode.EpisodeId, episodeId))
-            .AsNoTracking();
+        Query.Where(episode => string.Equals(episode.EpisodeId, episodeId));
     }
 }
