@@ -1,0 +1,90 @@
+# Maintainer: Fraser Newton <fpnewton@users.noreply.github.com>
+
+pkgname=dailywire-podcast-proxy-git
+pkgver=1.3.0.r4.ga4a5062
+pkgrel=1
+pkgdesc='Self-hosted proxy that creates private RSS feeds for DailyWire podcast episodes (git version)'
+arch=('x86_64')
+url='https://github.com/fpnewton/DailyWirePodcastProxy'
+license=('MIT')
+depends=('gcc-libs' 'glibc' 'openssl' 'zlib')
+makedepends=('dotnet-sdk' 'git')
+optdepends=(
+  'nginx: reverse proxy support'
+  'caddy: reverse proxy support'
+  'cloudflared: Cloudflare Tunnel support'
+)
+provides=("dailywire-podcast-proxy=${pkgver}")
+conflicts=('dailywire-podcast-proxy')
+backup=('etc/dailywire-podcast-proxy/DailyWirePodcastProxy.ini')
+options=('!strip')
+install='dailywire-podcast-proxy.install'
+
+source=(
+  'DailyWirePodcastProxy::git+https://github.com/fpnewton/DailyWirePodcastProxy.git#branch=master'
+  'dailywire-podcast-proxy.service'
+  'dailywire-podcast-proxy.sysusers'
+  'dailywire-podcast-proxy.tmpfiles'
+)
+
+sha256sums=('SKIP'
+            'e5651908e75c1173c7de8fb0a728a22dd561b40c360a8909df14139b3fb8f82b'
+            'fda5e077581908317da776fc8e9d8bc7e5fb60e10f2933b6641217f1f60bf9fb'
+            '26c6094ef72f79051f33c2f511d0ee2ae0ee34905e322bcf7a954a986ead95a2')
+
+pkgver() {
+  cd DailyWirePodcastProxy
+  git describe --long --tags --always |
+    sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+build() {
+  cd DailyWirePodcastProxy
+
+  export DOTNET_CLI_HOME="${srcdir}/dotnet-home"
+  export NUGET_PACKAGES="${srcdir}/nuget-packages"
+  export DOTNET_CLI_TELEMETRY_OPTOUT=1
+  export DOTNET_NOLOGO=1
+
+  dotnet publish src/PodcastProxy.Web/PodcastProxy.Web.csproj \
+    --configuration Release \
+    --runtime linux-x64 \
+    --self-contained true \
+    -p:PublishSingleFile=true \
+    -p:IncludeNativeLibrariesForSelfExtract=true \
+    -p:DebugSymbols=false \
+    -p:DebugType=None \
+    -p:PathMap="${srcdir}=/usr/src/debug/${pkgname}" \
+    --output "${srcdir}/publish"
+}
+
+package() {
+  install -dm755 "${pkgdir}/usr/lib/dailywire-podcast-proxy"
+  cp -a "${srcdir}/publish/." "${pkgdir}/usr/lib/dailywire-podcast-proxy/"
+  rm -f "${pkgdir}/usr/lib/dailywire-podcast-proxy/DailyWirePodcastProxy.ini"
+
+  chmod 755 "${pkgdir}/usr/lib/dailywire-podcast-proxy/PodcastProxy.Web"
+  install -dm755 "${pkgdir}/usr/bin"
+  ln -s /usr/lib/dailywire-podcast-proxy/PodcastProxy.Web \
+    "${pkgdir}/usr/bin/dailywire-podcast-proxy"
+
+  install -Dm644 \
+    "${srcdir}/DailyWirePodcastProxy/src/PodcastProxy.Web/DailyWirePodcastProxy.ini" \
+    "${pkgdir}/etc/dailywire-podcast-proxy/DailyWirePodcastProxy.ini"
+
+  install -Dm644 "${srcdir}/dailywire-podcast-proxy.service" \
+    "${pkgdir}/usr/lib/systemd/system/dailywire-podcast-proxy.service"
+
+  install -Dm644 "${srcdir}/dailywire-podcast-proxy.sysusers" \
+    "${pkgdir}/usr/lib/sysusers.d/dailywire-podcast-proxy.conf"
+
+  install -Dm644 "${srcdir}/dailywire-podcast-proxy.tmpfiles" \
+    "${pkgdir}/usr/lib/tmpfiles.d/dailywire-podcast-proxy.conf"
+
+  install -Dm644 \
+    "${srcdir}/DailyWirePodcastProxy/src/PodcastProxy.Web/DailyWirePodcastProxy.ini" \
+    "${pkgdir}/usr/share/dailywire-podcast-proxy/DailyWirePodcastProxy.ini.upstream"
+
+  install -Dm644 "${srcdir}/DailyWirePodcastProxy/LICENSE" \
+    "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}
