@@ -8,7 +8,7 @@ public class CheckAuthenticationJob(IServiceProvider serviceProvider) : IJob
 {
     public async Task Execute(IJobExecutionContext context)
     {
-        var scope = serviceProvider.CreateAsyncScope();
+        await using var scope = serviceProvider.CreateAsyncScope();
         var tokenService = scope.ServiceProvider.GetRequiredService<ITokenService>();
         var hasValidTokens = await tokenService.HasValidAccessToken(context.CancellationToken);
         

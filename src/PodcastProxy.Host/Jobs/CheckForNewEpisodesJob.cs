@@ -5,6 +5,7 @@ using Quartz;
 
 namespace PodcastProxy.Host.Jobs;
 
+[DisallowConcurrentExecution]
 public class CheckForNewEpisodesJob(ILogger<CheckForNewEpisodesJob> logger) : IJob
 {
     public async Task Execute(IJobExecutionContext context)
