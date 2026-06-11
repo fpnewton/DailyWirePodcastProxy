@@ -25,8 +25,16 @@ public static class QuartzConfiguration
 
         builder.Services.AddQuartz(config =>
         {
-            config.ScheduleJob<CheckForNewEpisodesJob>(trigger => trigger.WithCronSchedule(cronCheckForNewEpisodes));
-            config.ScheduleJob<CheckAuthenticationJob>(trigger => trigger.WithCronSchedule(cronCheckAuthentication));
+            config.ScheduleJob<CheckForNewEpisodesJob>(
+                trigger => trigger
+                    .WithIdentity("CheckForNewEpisodes")
+                    .WithCronSchedule(cronCheckForNewEpisodes),
+                job => job.WithIdentity("CheckForNewEpisodes"));
+            config.ScheduleJob<CheckAuthenticationJob>(
+                trigger => trigger
+                    .WithIdentity("CheckAuthentication")
+                    .WithCronSchedule(cronCheckAuthentication),
+                job => job.WithIdentity("CheckAuthentication"));
         });
 
         builder.Services.AddQuartzServer(options =>

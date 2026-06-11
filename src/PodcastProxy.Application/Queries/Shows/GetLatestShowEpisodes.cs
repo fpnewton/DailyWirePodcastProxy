@@ -33,7 +33,9 @@ public class GetLatestShowEpisodesQueryHandler(
         if (episodesTab is null)
             return Result.NotFound();
 
-        var showEpisodes = MapTabShowEpisodes(episodesTab).ToList();
+        var showEpisodes = MapTabShowEpisodes(episodesTab)
+            .DistinctBy(episode => episode.Id)
+            .ToList();
 
         return Result.Success(showEpisodes);
     }
