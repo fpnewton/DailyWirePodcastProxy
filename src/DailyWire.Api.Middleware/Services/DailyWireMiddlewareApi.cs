@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Ardalis.Result;
 using DailyWire.Api.Middleware.Configuration;
 using DailyWire.Api.Middleware.Models;
@@ -23,11 +24,12 @@ public class DailyWireMiddlewareApi(
         {
             var token = await tokenService.GetAccessToken(cancellationToken);
 
-            var response = await configuration.BaseUrl
+            var request = configuration.BaseUrl
                 .AppendPathSegments("v3", "getUserInfo")
                 .SetQueryParam("nocache", noCache ? 1 : 0)
-                .WithOAuthBearerToken(token)
-                .GetJsonAsync<DwUserInfo>(cancellationToken: cancellationToken);
+                .WithOAuthBearerToken(token);
+
+            var response = await GetJsonResponse<DwUserInfo>(request, "getUserInfo", cancellationToken);
 
             return Result.Success(response);
         }
@@ -47,12 +49,13 @@ public class DailyWireMiddlewareApi(
         {
             var token = await tokenService.GetAccessToken(cancellationToken);
 
-            var response = await configuration.BaseUrl
+            var request = configuration.BaseUrl
                 .AppendPathSegments("v4", "getPage")
                 .SetQueryParam("slug", slug)
                 .SetQueryParam("membershipPlan", membershipPlan)
-                .WithOAuthBearerToken(token)
-                .GetJsonAsync<DwPage>(cancellationToken: cancellationToken);
+                .WithOAuthBearerToken(token);
+
+            var response = await GetJsonResponse<DwPage>(request, $"getPage/{slug}", cancellationToken);
 
             return Result.Success(response);
         }
@@ -72,12 +75,13 @@ public class DailyWireMiddlewareApi(
         {
             var token = await tokenService.GetAccessToken(cancellationToken);
 
-            var response = await configuration.BaseUrl
+            var request = configuration.BaseUrl
                 .AppendPathSegments("v4", "getShowPage")
                 .SetQueryParam("slug", slug)
                 .SetQueryParam("membershipPlan", membershipPlan)
-                .WithOAuthBearerToken(token)
-                .GetJsonAsync<DwShowPage>(cancellationToken: cancellationToken);
+                .WithOAuthBearerToken(token);
+
+            var response = await GetJsonResponse<DwShowPage>(request, $"getShowPage/{slug}", cancellationToken);
 
             return Result.Success(response);
         }
@@ -97,11 +101,12 @@ public class DailyWireMiddlewareApi(
         {
             var token = await tokenService.GetAccessToken(cancellationToken);
 
-            var response = await configuration.BaseUrl
+            var request = configuration.BaseUrl
                 .AppendPathSegments("v4", "getEpisode")
                 .SetQueryParam("slug", slug)
-                .WithOAuthBearerToken(token)
-                .GetJsonAsync<DwEpisodeDetails>(cancellationToken: cancellationToken);
+                .WithOAuthBearerToken(token);
+
+            var response = await GetJsonResponse<DwEpisodeDetails>(request, $"getEpisode/{slug}", cancellationToken);
 
             return Result.Success(response);
         }
@@ -113,5 +118,24 @@ public class DailyWireMiddlewareApi(
 
             return Result.Error(error);
         }
+    }
+
+    private async Task<T> GetJsonResponse<T>(
+        IFlurlRequest request,
+        string operation,
+        CancellationToken cancellationToken)
+    {
+        var rawJson = await request.GetStringAsync(cancellationToken: cancellationToken);
+
+        if (configuration.LogRawJsonResponses)
+        {
+            logger.LogInformation(
+                "Raw DailyWire API JSON response for {Operation}: {RawJson}",
+                operation,
+                rawJson);
+        }
+
+        return request.Settings.JsonSerializer.Deserialize<T>(rawJson)
+               ?? throw new JsonException($"DailyWire API returned a null response for '{operation}'.");
     }
 }

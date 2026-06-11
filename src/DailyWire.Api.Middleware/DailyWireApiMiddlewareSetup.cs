@@ -24,7 +24,10 @@ public static class DailyWireApiMiddlewareSetup
 
             return new DwMiddlewareConfiguration
             {
-                BaseUrl = baseUrl
+                BaseUrl = baseUrl,
+                LogRawJsonResponses = bool.TryParse(
+                    configuration["DailyWireApi:LogRawJsonResponses"],
+                    out var logRawJsonResponses) && logRawJsonResponses
             };
         });
 
