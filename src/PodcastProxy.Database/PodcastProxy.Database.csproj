@@ -16,7 +16,7 @@
       <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.3.10" />
       <PackageReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="2.3.10" />
       <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.10" />
-      <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.3.10" />
+      <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.3.11" />
       <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.17" />
       <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.3.10" />
       <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="10.0.8" />
